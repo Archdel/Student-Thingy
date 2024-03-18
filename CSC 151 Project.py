@@ -265,10 +265,13 @@ class ViewList(tk.Frame):
         label = tk.Label(self, text="Student List", font=("Arial", 18))
         label.pack(pady=10, padx=10)
         sorted_students = sort_students_by_id(students)
-
+        scrollbar = tk.Scrollbar(self)
+        scrollbar.pack(side = tk.RIGHT, fill = tk.Y)
+        self.listbox = tk.listbox(self, yscrollcommand=scrollbar.set)
+        self.listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=TRUE)
+        scrollbar.config(command=self.student_listbox.yview)
         for student in sorted_students:
-            info_label = tk.Label(self, text=str(student))
-            info_label.pack()
+            self.listbox.insert(tk.END, str(student))
 
 class EditStudent(tk.Frame):
     def __init__(self, parent, controller):
