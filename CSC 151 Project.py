@@ -265,19 +265,43 @@ class ViewList(tk.Frame):
         label = tk.Label(self, text="Student List", font=("Arial", 18))
         label.pack(pady=10, padx=10)
 
+        self.search_var = tk.StringVar()
+        self.search_entry = tk.Entry(self, textvariable=self.search_var)
+        self.search_entry.pack()
+        search_button = tk.Button(self, text="Search", command=self.search_student)
+        search_button.pack()
         self.tree = ttk.Treeview(self, columns=('ID', 'Name', 'Level', 'Gender', 'Course Code'))
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         self.tree.heading('ID', text='ID')
         self.tree.heading('Name', text='Name')
-        self.tree.heading('Level', text='Level')        
+        self.tree.heading('Level', text='Level')
         self.tree.heading('Gender', text='Gender')
         self.tree.heading('Course Code', text='Course Code')
         scrollbar = ttk.Scrollbar(self, orient='vertical', command=self.tree.yview)
         scrollbar.pack(side=tk.RIGHT, fill='y')
         self.tree.configure(yscroll=scrollbar.set)
+        self.populate_treeview()
+
+    def populate_treeview(self):
         sorted_students = sort_students_by_id(students)
         for student in sorted_students:
             self.tree.insert('', tk.END, values=(student.id, student.name, student.lvl, student.gender, student.course_code))
+
+    def search_student(self):
+        search_id = self.search_var.get()
+        if search_id:
+            self.tree.delete(*self.tree.get_children())  # Clear existing items
+            found_student = None
+            for student in students:
+                if student.id == search_id:
+                    found_student = student
+                    self.tree.insert('', tk.END, values=(found_student.id, found_student.name, found_student.lvl, found_student.gender, found_student.course_code))
+                    break
+            if not found_student:
+                messagebox.showinfo("Info", "Student not found.")
+        else:
+            messagebox.showinfo("Info", "Please enter a student ID to search.")
+
             
 class EditStudent(tk.Frame):
     def __init__(self, parent, controller):
