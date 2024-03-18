@@ -89,15 +89,15 @@ def add_student(students, courses, id_number, name, lvl, gender, course_code):
         messagebox.showerror("Error", "Invalid gender. Please enter 'M' for Male or 'F' for Female.")
         return
 
-    if not re.match(r'^[A-Z0-9]{4,5}$', course_code):
-        messagebox.showerror("Error", "Invalid course code format. Please enter 4-5 alphanumeric characters.")
+    if not re.match(r'^[A-Z0-9-]{4,15}$', course_code):
+        messagebox.showerror("Error", "Invalid course code format. Please enter 4-15 alphanumeric characters.")
         return
 
     course_exist = any(course.course_code.lower() == course_code.lower() for course in courses)
 
     if not course_exist:
-        course_name = input("Enter Course Name for course code {}: ".format(course_code))
-        courses.append(Course(course_code, course_name))
+        messagebox.showerror("Error", "Course Code does not exist")
+        return
 
     student = Student(id_number, name, lvl, gender, course_code)
     students.append(student)
