@@ -264,15 +264,21 @@ class ViewList(tk.Frame):
         self.controller = controller
         label = tk.Label(self, text="Student List", font=("Arial", 18))
         label.pack(pady=10, padx=10)
-        sorted_students = sort_students_by_id(students)
-        scrollbar = tk.Scrollbar(self)
-        scrollbar.pack(side = tk.RIGHT, fill = tk.Y)
-        self.listbox = tk.listbox(self, yscrollcommand=scrollbar.set)
-        self.listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=TRUE)
-        scrollbar.config(command=self.student_listbox.yview)
-        for student in sorted_students:
-            self.listbox.insert(tk.END, str(student))
 
+        self.tree = ttk.Treeview(self, columns=('ID', 'Name', 'Level', 'Gender', 'Course Code'))
+        self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        self.tree.heading('ID', text='ID')
+        self.tree.heading('Name', text='Name')
+        self.tree.heading('Level', text='Level')        
+        self.tree.heading('Gender', text='Gender')
+        self.tree.heading('Course Code', text='Course Code')
+        scrollbar = ttk.Scrollbar(self, orient='vertical', command=self.tree.yview)
+        scrollbar.pack(side=tk.RIGHT, fill='y')
+        self.tree.configure(yscroll=scrollbar.set)
+        sorted_students = sort_students_by_id(students)
+        for student in sorted_students:
+            self.tree.insert('', tk.END, values=(student.id, student.name, student.lvl, student.gender, student.course_code))
+            
 class EditStudent(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
