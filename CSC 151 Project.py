@@ -147,12 +147,18 @@ class Front(tk.Frame):
         add_st.pack()
         delete_st = tk.Button(self, text="Delete Student", command=lambda: controller.show_frame(DeleteStudent))
         delete_st.pack()
+        add_st = tk.Button(self, text="Edit Student", command=lambda: controller.show_frame(EditStudent))
+        add_st.pack()
         add_co = tk.Button(self, text="Add Course", command=lambda: controller.show_frame(AddCourse))
         add_co.pack()
         delete_co = tk.Button(self, text="Delete Course", command=lambda: controller.show_frame(DeleteCourse))
         delete_co.pack()
         view_list = tk.Button(self, text="View List", command=lambda: controller.show_frame(ViewList))
         view_list.pack()
+        add_st = tk.Button(self, text="Edit Course", command=lambda: controller.show_frame(EditCourse))
+        add_st.pack()
+        add_st = tk.Button(self, text="View Courses", command=lambda: controller.show_frame(ViewCourses))
+        add_st.pack()
 
 class AddStudent(tk.Frame):
     def __init__(self, parent, controller):
@@ -374,6 +380,100 @@ class EditStudent(tk.Frame):
                 return
         messagebox.showinfo("Error", "Student not found.")
 
+class EditCourse(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        
+        label = tk.Label(self, text="Edit Course Information", font=("Arial", 18))
+        label.pack(pady=10, padx=10)
+        
+        code_label = tk.Label(self, text="Enter Course Code:")
+        code_label.place(x=10, y=50)
+        self.code_entry = tk.Entry(self, width=30)
+        self.code_entry.place(x=150, y=50)
+        
+        search_button = tk.Button(self, text="Search", command=self.search_course)
+        search_button.place(x=300, y=50)
+
+        self.name_var = tk.StringVar()
+        name_label = tk.Label(self, text="Course Name:")
+        name_label.place(x=10, y=80)
+        self.name_entry = tk.Entry(self, width=30, textvariable=self.name_var)
+        self.name_entry.place(x=150, y=80)
+        
+        save_button = tk.Button(self, text="Save", command=self.save_course)
+        save_button.place(x=150, y=110)
+        
+        cancel_button = tk.Button(self, text="Cancel", command=lambda: controller.show_frame(Front))
+        cancel_button.place(x=230, y=110)
+
+    def search_course(self):
+        course_code = self.code_entry.get()
+        found_course = None
+        for course in courses:
+            if course.course_code == course_code:
+                found_course = course
+                break
+        if found_course:
+            self.name_var.set(found_course.course_name)
+        else:
+            messagebox.showinfo("Error", "Course not found.")
+
+    def save_course(self):
+        course_code = self.code_entry.get()
+        course_name = self.name_entry.get()
+        for course in courses:
+            if course.course_code == course_code:
+                course.course_name = course_name
+                save_courses_to_csv(courses)
+                messagebox.showinfo("Success", "Course information updated successfully.")
+                self.controller.show_frame(Front)
+                return
+        messagebox.showinfo("Error", "Course not found.")
+
+class ViewCourses(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        
+        label = tk.Label(self, text="Course List", font=("Arial", 18))
+        label.pack(pady=10, padx=10)
+        self.search_var = tk.StringVar()
+        self.search_entry = tk.Entry(self, textvariable=self.search_var)
+        self.search_entry.pack()
+        search_button = tk.Button(self, text="Search", command=self.search_course)
+        search_button.pack()
+        
+        self.tree = ttk.Treeview(self, columns=('Course Code', 'Course Name'))
+        self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        self.tree.heading('Course Code', text='Course Code')
+        self.tree.heading('Course Name', text='Course Name')
+        scrollbar = ttk.Scrollbar(self, orient='vertical', command=self.tree.yview)
+        scrollbar.pack(side=tk.RIGHT, fill='y')
+        self.tree.configure(yscroll=scrollbar.set)
+
+        self.populate_treeview()
+
+    def search_course(self):
+        search_code = self.search_var.get()
+        if search_code:
+            self.tree.delete(*self.tree.get_children())  # Clear existing items
+            found_course = None
+            for course in courses:
+                if course.course_code == search_code:
+                    found_course = course
+                    self.tree.insert('', tk.END, values=(found_course.course_code, found_course.course_name))
+                    break
+            if not found_course:
+                messagebox.showinfo("Info", "Course not found.")
+        else:
+            messagebox.showinfo("Info", "Please enter a course code to search.")
+
+    def populate_treeview(self):
+        for course in courses:
+            self.tree.insert('', tk.END, values=(course.course_code, course.course_name))
+
 class SampleApp(tk.Tk):
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
@@ -390,7 +490,7 @@ class SampleApp(tk.Tk):
         students = load_students_from_csv()
         courses = load_courses_from_csv()
         
-        for F in (Front, AddStudent, DeleteStudent, AddCourse, DeleteCourse, ViewList, EditStudent):
+        for F in (Front, AddStudent, DeleteStudent, AddCourse, DeleteCourse, ViewList, EditStudent, EditCourse, ViewCourses):
             frame = F(container, self)
             self.frames[F] = frame
             frame.grid(row=0, column=0, sticky="nsew")
