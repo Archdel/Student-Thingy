@@ -194,7 +194,7 @@ class AddStudent(tk.Frame):
         add_button.place(x=180, y=230)
         back_button = tk.Button(self, text="Back",command=lambda: controller.show_frame(Front))
         back_button.place(x=180, y=260)
-
+        
     def add_student(self):
         id_number = self.id_entry.get()
         name = self.name_entry.get()
@@ -203,6 +203,8 @@ class AddStudent(tk.Frame):
         course_code = self.course_entry.get()
         
         add_student(students, courses, id_number, name, lvl, gender, course_code)
+
+    
 
 class DeleteStudent(tk.Frame):
     def __init__(self, parent, controller):
@@ -248,6 +250,9 @@ class AddCourse(tk.Frame):
 
     def add_course(self):
         course_code = self.code_entry.get()
+        if any(course.course_code == course_code for course in courses):
+            messagebox.showerror("Error", "Course with this Course Code already exists.")
+            return
         course_name = self.course_entry.get()
         courses.append(Course(course_code, course_name))
         save_courses_to_csv(courses)
@@ -306,7 +311,7 @@ class ViewList(tk.Frame):
     def search_student(self):
         search_id = self.search_var.get()
         if search_id:
-            self.tree.delete(*self.tree.get_children())  # Clear existing items
+            self.tree.delete(*self.tree.get_children()) 
             found_student = None
             for student in students:
                 if student.id == search_id:
