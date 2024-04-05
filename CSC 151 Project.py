@@ -153,10 +153,10 @@ class Front(tk.Frame):
         add_co.pack()
         delete_co = tk.Button(self, text="Delete Course", command=lambda: controller.show_frame(DeleteCourse))
         delete_co.pack()
-        view_list = tk.Button(self, text="View List", command=lambda: controller.show_frame(ViewList))
-        view_list.pack()
         add_st = tk.Button(self, text="Edit Course", command=lambda: controller.show_frame(EditCourse))
         add_st.pack()
+        view_list = tk.Button(self, text="View List", command=lambda: controller.show_frame(ViewList))
+        view_list.pack()
         add_st = tk.Button(self, text="View Courses", command=lambda: controller.show_frame(ViewCourses))
         add_st.pack()
 
@@ -192,6 +192,8 @@ class AddStudent(tk.Frame):
         
         add_button = tk.Button(self, text="Add", command=self.add_student)
         add_button.place(x=180, y=230)
+        back_button = tk.Button(self, text="Back",command=lambda: controller.show_frame(Front))
+        back_button.place(x=180, y=260)
 
     def add_student(self):
         id_number = self.id_entry.get()
@@ -216,6 +218,8 @@ class DeleteStudent(tk.Frame):
         
         delete_button = tk.Button(self, text="Delete", command=self.delete_student)
         delete_button.place(x=75, y=110)
+        back_button = tk.Button(self, text="Back",command=lambda: controller.show_frame(Front))
+        back_button.place(x=180, y=260)
 
     def delete_student(self):
         id_to_delete = self.id_entry.get()
@@ -239,6 +243,8 @@ class AddCourse(tk.Frame):
         
         add_button = tk.Button(self, text="Add", command=self.add_course)
         add_button.place(x=110, y=110)
+        back_button = tk.Button(self, text="Back",command=lambda: controller.show_frame(Front))
+        back_button.place(x=180, y=260)
 
     def add_course(self):
         course_code = self.code_entry.get()
@@ -256,6 +262,8 @@ class DeleteCourse(tk.Frame):
         label.place(x=10, y=50)
         self.code_entry = tk.Entry(self, width=30)
         self.code_entry.place(x=110, y=50)
+        back_button = tk.Button(self, text="Back",command=lambda: controller.show_frame(Front))
+        back_button.place(x=180, y=260)
         
         delete_button = tk.Button(self, text="Delete", command=self.delete_course)
         delete_button.place(x=110, y=80)
@@ -276,6 +284,8 @@ class ViewList(tk.Frame):
         self.search_entry.pack()
         search_button = tk.Button(self, text="Search", command=self.search_student)
         search_button.pack()
+        back_button = tk.Button(self, text="Back",command=lambda: controller.show_frame(Front))
+        back_button.pack()
         self.tree = ttk.Treeview(self, columns=('ID', 'Name', 'Level', 'Gender', 'Course Code'))
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         self.tree.heading('ID', text='ID')
@@ -346,6 +356,8 @@ class EditStudent(tk.Frame):
         save_button.place(x=150, y=230)
         cancel_button = tk.Button(self, text="Cancel", command=lambda: controller.show_frame(Front))
         cancel_button.place(x=230, y=230)
+        back_button = tk.Button(self, text="Back",command=lambda: controller.show_frame(Front))
+        back_button.place(x=180, y=260)
 
     def search_student(self):
         student_id = self.id_entry.get()
@@ -407,6 +419,8 @@ class EditCourse(tk.Frame):
         
         cancel_button = tk.Button(self, text="Cancel", command=lambda: controller.show_frame(Front))
         cancel_button.place(x=230, y=110)
+        back_button = tk.Button(self, text="Back",command=lambda: controller.show_frame(Front))
+        back_button.place(x=180, y=260)
 
     def search_course(self):
         course_code = self.code_entry.get()
@@ -444,6 +458,8 @@ class ViewCourses(tk.Frame):
         self.search_entry.pack()
         search_button = tk.Button(self, text="Search", command=self.search_course)
         search_button.pack()
+        back_button = tk.Button(self, text="Back",command=lambda: controller.show_frame(Front))
+        back_button.pack()
         
         self.tree = ttk.Treeview(self, columns=('Course Code', 'Course Name'))
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
