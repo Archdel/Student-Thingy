@@ -143,19 +143,7 @@ class Front(tk.Frame):
         label = tk.Label(self, text="What would you like to do?", font=("Arial", 18))
         label.pack(pady=10, padx=10)
         
-        add_st = tk.Button(self, text="Add Student", command=lambda: controller.show_frame(AddStudent))
-        add_st.pack()
-        delete_st = tk.Button(self, text="Delete Student", command=lambda: controller.show_frame(DeleteStudent))
-        delete_st.pack()
-        add_st = tk.Button(self, text="Edit Student", command=lambda: controller.show_frame(EditStudent))
-        add_st.pack()
-        add_co = tk.Button(self, text="Add Course", command=lambda: controller.show_frame(AddCourse))
-        add_co.pack()
-        delete_co = tk.Button(self, text="Delete Course", command=lambda: controller.show_frame(DeleteCourse))
-        delete_co.pack()
-        add_st = tk.Button(self, text="Edit Course", command=lambda: controller.show_frame(EditCourse))
-        add_st.pack()
-        view_list = tk.Button(self, text="View List", command=lambda: controller.show_frame(ViewList))
+        view_list = tk.Button(self, text="View Students", command=lambda: controller.show_frame(ViewStudents))
         view_list.pack()
         add_st = tk.Button(self, text="View Courses", command=lambda: controller.show_frame(ViewCourses))
         add_st.pack()
@@ -192,7 +180,7 @@ class AddStudent(tk.Frame):
         
         add_button = tk.Button(self, text="Add", command=self.add_student)
         add_button.place(x=180, y=230)
-        back_button = tk.Button(self, text="Back",command=lambda: controller.show_frame(Front))
+        back_button = tk.Button(self, text="Back",command=lambda: controller.show_frame(ViewStudents))
         back_button.place(x=180, y=260)
         
     def add_student(self):
@@ -220,7 +208,7 @@ class DeleteStudent(tk.Frame):
         
         delete_button = tk.Button(self, text="Delete", command=self.delete_student)
         delete_button.place(x=75, y=110)
-        back_button = tk.Button(self, text="Back",command=lambda: controller.show_frame(Front))
+        back_button = tk.Button(self, text="Back",command=lambda: controller.show_frame(ViewStudents))
         back_button.place(x=180, y=260)
 
     def delete_student(self):
@@ -245,7 +233,7 @@ class AddCourse(tk.Frame):
         
         add_button = tk.Button(self, text="Add", command=self.add_course)
         add_button.place(x=110, y=110)
-        back_button = tk.Button(self, text="Back",command=lambda: controller.show_frame(Front))
+        back_button = tk.Button(self, text="Back",command=lambda: controller.show_frame(ViewCourses))
         back_button.place(x=180, y=260)
 
     def add_course(self):
@@ -267,7 +255,7 @@ class DeleteCourse(tk.Frame):
         label.place(x=10, y=50)
         self.code_entry = tk.Entry(self, width=30)
         self.code_entry.place(x=110, y=50)
-        back_button = tk.Button(self, text="Back",command=lambda: controller.show_frame(Front))
+        back_button = tk.Button(self, text="Back",command=lambda: controller.show_frame(ViewCourses))
         back_button.place(x=180, y=260)
         
         delete_button = tk.Button(self, text="Delete", command=self.delete_course)
@@ -277,13 +265,12 @@ class DeleteCourse(tk.Frame):
         course_code = self.code_entry.get()
         delete_course(students, courses, course_code)
 
-class ViewList(tk.Frame):
+class ViewStudents(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         self.controller = controller
         label = tk.Label(self, text="Student List", font=("Arial", 18))
         label.pack(pady=10, padx=10)
-
         self.search_var = tk.StringVar()
         self.search_entry = tk.Entry(self, textvariable=self.search_var)
         self.search_entry.pack()
@@ -303,6 +290,14 @@ class ViewList(tk.Frame):
         self.tree.configure(yscroll=scrollbar.set)
         self.populate_treeview()
 
+        
+        add_st = tk.Button(self, text="Add Student", command=lambda: controller.show_frame(AddStudent))
+        add_st.pack(side=tk.LEFT, padx=5)
+        delete_st = tk.Button(self, text="Delete Student", command=lambda: controller.show_frame(DeleteStudent))
+        delete_st.pack(side=tk.LEFT, padx=5, pady=10)
+        add_st = tk.Button(self, text="Edit Student", command=lambda: controller.show_frame(EditStudent))
+        add_st.pack(side=tk.LEFT, padx=5)
+
     def populate_treeview(self):
         sorted_students = sort_students_by_id(students)
         for student in sorted_students:
@@ -319,7 +314,7 @@ class ViewList(tk.Frame):
                     self.tree.insert('', tk.END, values=(found_student.id, found_student.name, found_student.lvl, found_student.gender, found_student.course_code))
                     break
             if not found_student:
-                messagebox.showinfo("Info", "Student not found.")
+                messagebox.showinfo("Info", "Please input the correct ID number. \nFormat: 20XX-XXXX ")
         else:
             messagebox.showinfo("Info", "Please enter a student ID to search.")
 
@@ -359,10 +354,8 @@ class EditStudent(tk.Frame):
         self.course_entry.place(x=150, y=190)
         save_button = tk.Button(self, text="Save", command=self.save_student)
         save_button.place(x=150, y=230)
-        cancel_button = tk.Button(self, text="Cancel", command=lambda: controller.show_frame(Front))
+        cancel_button = tk.Button(self, text="Cancel", command=lambda: controller.show_frame(ViewStudents))
         cancel_button.place(x=230, y=230)
-        back_button = tk.Button(self, text="Back",command=lambda: controller.show_frame(Front))
-        back_button.place(x=180, y=260)
 
     def search_student(self):
         student_id = self.id_entry.get()
@@ -422,10 +415,8 @@ class EditCourse(tk.Frame):
         save_button = tk.Button(self, text="Save", command=self.save_course)
         save_button.place(x=150, y=110)
         
-        cancel_button = tk.Button(self, text="Cancel", command=lambda: controller.show_frame(Front))
+        cancel_button = tk.Button(self, text="Cancel", command=lambda: controller.show_frame(ViewCourses))
         cancel_button.place(x=230, y=110)
-        back_button = tk.Button(self, text="Back",command=lambda: controller.show_frame(Front))
-        back_button.place(x=180, y=260)
 
     def search_course(self):
         course_code = self.code_entry.get()
@@ -476,6 +467,13 @@ class ViewCourses(tk.Frame):
 
         self.populate_treeview()
 
+        add_co = tk.Button(self, text="Add Course", command=lambda: controller.show_frame(AddCourse))
+        add_co.pack(side=tk.LEFT, padx=5)
+        delete_co = tk.Button(self, text="Delete Course", command=lambda: controller.show_frame(DeleteCourse))
+        delete_co.pack(side=tk.LEFT, padx=5)
+        add_st = tk.Button(self, text="Edit Course", command=lambda: controller.show_frame(EditCourse))
+        add_st.pack(side=tk.LEFT, padx=5)
+
     def search_course(self):
         search_code = self.search_var.get()
         if search_code:
@@ -511,7 +509,7 @@ class SampleApp(tk.Tk):
         students = load_students_from_csv()
         courses = load_courses_from_csv()
         
-        for F in (Front, AddStudent, DeleteStudent, AddCourse, DeleteCourse, ViewList, EditStudent, EditCourse, ViewCourses):
+        for F in (Front, AddStudent, DeleteStudent, AddCourse, DeleteCourse, ViewStudents, EditStudent, EditCourse, ViewCourses):
             frame = F(container, self)
             self.frames[F] = frame
             frame.grid(row=0, column=0, sticky="nsew")
