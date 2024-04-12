@@ -301,7 +301,7 @@ class ViewStudents(tk.Frame):
     def populate_treeview(self):
         sorted_students = sort_students_by_id(students)
         for student in sorted_students:
-            self.tree.insert('', tk.END, values=(student.id, student.name, student.lvl, student.gender, student.course_code))
+            self.tree.insert('', tk.END, values=(student.id, student.name, student.lvl, student.gender, student.course_code if student.course_code else None))
 
     def search_student(self):
         search_id = self.search_var.get()
