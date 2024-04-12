@@ -523,6 +523,6 @@ class SampleApp(tk.Tk):
 
 if __name__ == "__main__":
     app = SampleApp()
-    app.geometry("400x300")
+    app.state('zoomed')
     app.title("Page Navigation Example")
     app.mainloop()
