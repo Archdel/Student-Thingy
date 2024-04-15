@@ -191,6 +191,7 @@ class AddStudent(tk.Frame):
         course_code = self.course_entry.get()
         
         add_student(students, courses, id_number, name, lvl, gender, course_code)
+        self.controller.frames[ViewStudents].refresh_treeview()
 
     
 
@@ -206,14 +207,17 @@ class DeleteStudent(tk.Frame):
         self.id_entry = tk.Entry(self, width=30)
         self.id_entry.place(x=10, y=80)
         
-        delete_button = tk.Button(self, text="Delete", command=self.delete_student)
+        delete_button = tk.Button(self, text="Delete", command=self.confirm_delete_student)
         delete_button.place(x=75, y=110)
         back_button = tk.Button(self, text="Back",command=lambda: controller.show_frame(ViewStudents))
         back_button.place(x=180, y=260)
 
-    def delete_student(self):
+    def confirm_delete_student(self):
         id_to_delete = self.id_entry.get()
-        delete_student(students, id_to_delete)
+        confirmation = messagebox.askyesno("Confirmation", f"Are you sure you want to delete student with ID {id_to_delete}?")
+        if confirmation:
+            delete_student(students, id_to_delete)
+            self.controller.frames[ViewStudents].refresh_treeview()
 
 class AddCourse(tk.Frame):
     def __init__(self, parent, controller):
@@ -244,6 +248,7 @@ class AddCourse(tk.Frame):
         course_name = self.course_entry.get()
         courses.append(Course(course_code, course_name))
         save_courses_to_csv(courses)
+        self.controller.frames[ViewStudents].refresh_treeview()
 
 class DeleteCourse(tk.Frame):
     def __init__(self, parent, controller):
@@ -258,12 +263,15 @@ class DeleteCourse(tk.Frame):
         back_button = tk.Button(self, text="Back",command=lambda: controller.show_frame(ViewCourses))
         back_button.place(x=180, y=260)
         
-        delete_button = tk.Button(self, text="Delete", command=self.delete_course)
+        delete_button = tk.Button(self, text="Delete", command=self.confirm_delete_course)
         delete_button.place(x=110, y=80)
 
-    def delete_course(self):
+    def confirm_delete_course(self):
         course_code = self.code_entry.get()
-        delete_course(students, courses, course_code)
+        confirmation = messagebox.askyesno("Confirmation", f"Are you sure you want to delete course with code {course_code}?")
+        if confirmation:
+            delete_course(students, courses, course_code)
+            self.controller.frames[ViewStudents].refresh_treeview()
 
 class ViewStudents(tk.Frame):
     def __init__(self, parent, controller):
@@ -302,6 +310,10 @@ class ViewStudents(tk.Frame):
         sorted_students = sort_students_by_id(students)
         for student in sorted_students:
             self.tree.insert('', tk.END, values=(student.id, student.name, student.lvl, student.gender, student.course_code if student.course_code else None))
+            
+    def refresh_treeview(self):
+        self.tree.delete(*self.tree.get_children())
+        self.populate_treeview()
 
     def search_student(self):
         search_id = self.search_var.get()
@@ -385,6 +397,7 @@ class EditStudent(tk.Frame):
                 student.gender = gender
                 student.course_code = course_code
                 save_students_to_csv(students)
+                self.controller.frames[ViewStudents].refresh_treeview()
                 messagebox.showinfo("Success", "Student information updated successfully.")
                 self.controller.show_frame(Front)
                 return
@@ -437,6 +450,7 @@ class EditCourse(tk.Frame):
             if course.course_code == course_code:
                 course.course_name = course_name
                 save_courses_to_csv(courses)
+                self.controller.frames[ViewStudents].refresh_treeview()
                 messagebox.showinfo("Success", "Course information updated successfully.")
                 self.controller.show_frame(Front)
                 return
@@ -492,6 +506,9 @@ class ViewCourses(tk.Frame):
     def populate_treeview(self):
         for course in courses:
             self.tree.insert('', tk.END, values=(course.course_code, course.course_name))
+    def refresh_treeview(self):
+        self.tree.delete(*self.tree.get_children())
+        self.populate_treeview()
 
 class SampleApp(tk.Tk):
     def __init__(self, *args, **kwargs):
