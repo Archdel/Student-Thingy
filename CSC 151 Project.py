@@ -284,6 +284,8 @@ class ViewStudents(tk.Frame):
         self.search_entry.pack()
         search_button = tk.Button(self, text="Search", command=self.search_student)
         search_button.pack()
+        back_button = tk.Button(self, text="Clear",command=self.refresh_treeview)
+        back_button.pack()
         back_button = tk.Button(self, text="Back",command=lambda: controller.show_frame(Front))
         back_button.pack()
         self.tree = ttk.Treeview(self, columns=('ID', 'Name', 'Level', 'Gender', 'Course Code'))
@@ -391,17 +393,19 @@ class EditStudent(tk.Frame):
         gender = self.gender_var.get()
         course_code = self.course_entry.get()
         for student in students:
-            if student.id == student_id:
-                student.name = name
-                student.lvl = lvl
-                student.gender = gender
-                student.course_code = course_code
-                save_students_to_csv(students)
-                self.controller.frames[ViewStudents].refresh_treeview()
-                messagebox.showinfo("Success", "Student information updated successfully.")
-                self.controller.show_frame(Front)
-                return
-        messagebox.showinfo("Error", "Student not found.")
+            if student.course_code == course_code:
+                if student.id == student_id and student.course_code == course_code:
+                    student.name = name
+                    student.lvl = lvl
+                    student.gender = gender
+                    student.course_code = course_code
+                    save_students_to_csv(students)
+                    self.controller.frames[ViewStudents].refresh_treeview()
+                    messagebox.showinfo("Success", "Student information updated successfully.")
+                    self.controller.show_frame(Front)
+                    return
+                return messagebox.showinfo("Error", "Student not found.")
+            return messagebox.showinfo("Error", "Course Code not found.")
 
 class EditCourse(tk.Frame):
     def __init__(self, parent, controller):
@@ -450,7 +454,7 @@ class EditCourse(tk.Frame):
             if course.course_code == course_code:
                 course.course_name = course_name
                 save_courses_to_csv(courses)
-                self.controller.frames[ViewStudents].refresh_treeview()
+                self.controller.frames[ViewCourses].refresh_treeview()
                 messagebox.showinfo("Success", "Course information updated successfully.")
                 self.controller.show_frame(Front)
                 return
@@ -468,9 +472,10 @@ class ViewCourses(tk.Frame):
         self.search_entry.pack()
         search_button = tk.Button(self, text="Search", command=self.search_course)
         search_button.pack()
+        clear_button = tk.Button(self, text="Clear", command=self.refresh_treeview)
+        clear_button.pack()
         back_button = tk.Button(self, text="Back",command=lambda: controller.show_frame(Front))
         back_button.pack()
-        
         self.tree = ttk.Treeview(self, columns=('Course Code', 'Course Name'))
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         self.tree.heading('Course Code', text='Course Code')
