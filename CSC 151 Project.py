@@ -5,15 +5,17 @@ import os
 import re
 
 class Student:
-    def __init__(self, id: str, name: str, lvl: str, gender: str, course_code: str) -> None:
+    def __init__(self, id: str, first_name: str,middle_name: str,last_name: str, lvl: str, gender: str, course_code: str) -> None:
         self.id = id
-        self.name = name
+        self.first_name = first_name
+        self.middle_name = middle_name
+        self.last_name = last_name
         self.lvl = lvl
         self.gender = gender
         self.course_code = course_code
     
     def __str__(self) -> str:
-        return f'id: {self.id}, name: {self.name}, level: {self.lvl}, gender: {self.gender}, course code: {self.course_code}'
+        return f'id: {self.id}, first_name: {self.first_name}, middle_name:{self.middle_name}, last_name: {self.last_name}, level: {self.lvl}, gender: {self.gender}, course code: {self.course_code}'
 
 class Course:
     def __init__(self, course_code: str, course_name: str) -> None:
@@ -27,8 +29,8 @@ def load_students_from_csv():
             with open('students.csv', mode='r') as csvfile:
                 reader = csv.DictReader(csvfile)
                 for row in reader:
-                    if all(field in row for field in ['id', 'name', 'lvl', 'gender', 'course_code']):
-                        students.append(Student(row['id'], row['name'], row['lvl'], row['gender'], row['course_code']))
+                    if all(field in row for field in ['id', 'first_name', 'middle_name', 'last_name', 'lvl', 'gender', 'course_code']):
+                        students.append(Student(row['id'], row['first_name'], row['middle_name'], row['last_name'], row['lvl'], row['gender'], row['course_code']))
                     else:
                         print("Error: Missing or incomplete data for a student in students.csv")
     except FileNotFoundError:
@@ -52,11 +54,11 @@ def load_courses_from_csv():
 
 def save_students_to_csv(students):
     with open('students.csv', mode='w', newline='') as csvfile:
-        fieldnames = ["id", "name", "lvl", "gender", "course_code"]
+        fieldnames = ["id", "first_name", "middle_name", "last_name", "lvl", "gender", "course_code"]
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
         for student in students:
-            writer.writerow({"id": student.id, "name": student.name, "lvl": student.lvl, "gender": student.gender, "course_code": student.course_code})
+            writer.writerow({"id": student.id, "first_name": student.first_name,"middle_name": student.middle_name, "last_name": student.last_name, "lvl": student.lvl, "gender": student.gender, "course_code": student.course_code})
     messagebox.showinfo("Success", "Students data saved successfully.")
 
 def save_courses_to_csv(courses):
@@ -68,7 +70,7 @@ def save_courses_to_csv(courses):
             writer.writerow({"course_code": course.course_code, "course_name": course.course_name})
     messagebox.showinfo("Success", "Courses data saved successfully.")
 
-def add_student(students, courses, id_number, name, lvl, gender, course_code):
+def add_student(students, courses, id_number, first_name, middle_name, last_name, lvl, gender, course_code):
     if any(student.id == id_number for student in students):
         messagebox.showerror("Error", "Student with this ID already exists.")
         return
@@ -77,7 +79,14 @@ def add_student(students, courses, id_number, name, lvl, gender, course_code):
         messagebox.showerror("Error", "Invalid ID format. Please enter in the format XXXX-XXXX.")
         return
 
-    if not name.replace(" ", "").isalpha():
+    if not first_name.replace(" ", "").isalpha():
+        messagebox.showerror("Error", "Invalid name format. Please enter only alphabetic characters.")
+        return
+    
+    if not middle_name.replace(" ", "").isalpha():
+        messagebox.showerror("Error", "Invalid name format. Please enter only alphabetic characters.")
+        return
+    if not last_name.replace(" ", "").isalpha():
         messagebox.showerror("Error", "Invalid name format. Please enter only alphabetic characters.")
         return
 
@@ -99,7 +108,7 @@ def add_student(students, courses, id_number, name, lvl, gender, course_code):
         messagebox.showerror("Error", "Course Code does not exist")
         return
 
-    student = Student(id_number, name, lvl, gender, course_code)
+    student = Student(id_number, first_name, middle_name, last_name, lvl, gender, course_code)
     students.append(student)
 
     save_students_to_csv(students)
@@ -159,9 +168,13 @@ class AddStudent(tk.Frame):
         id_label.place(x=10, y=50)
         self.id_entry = tk.Entry(self, width=30)
         self.id_entry.place(x=10,y=80)
-        name_label = tk.Label(self, text="Name: ")
-        name_label.place(x=210, y=50)
-        self.name_entry = tk.Entry(self, width=30)
+        first_name_label = tk.Label(self, text="First Name: ")
+        first_name_label.place(x=210, y=50)
+        middle_name_label = tk.Label(self, text="Middle Name: ")
+        middle_name_label.place(x=270, y=50)
+        last_name_label = tk.Label(self, text="Last Name: ")
+        last_name_label.place(x=330, y=50)
+        self.first_name_entry = tk.Entry(self, width=30)
         self.name_entry.place(x=210,y=80)
         lvl_label = tk.Label(self, text="Year Level: ")
         lvl_label.place(x=10, y=110)
@@ -185,12 +198,14 @@ class AddStudent(tk.Frame):
         
     def add_student(self):
         id_number = self.id_entry.get()
-        name = self.name_entry.get()
+        first_name = self.first_name_entry.get()
+        middle_name = self.middle_name_entry.get()
+        last_name = self.last_name_entry.get()
         lvl = self.lvl_entry.get()
         gender = self.gender_var.get()
         course_code = self.course_entry.get()
         
-        add_student(students, courses, id_number, name, lvl, gender, course_code)
+        add_student(students, courses, id_number, first_name, middle_name, last_name, lvl, gender, course_code)
         self.controller.frames[ViewStudents].refresh_treeview()
 
     
@@ -288,10 +303,12 @@ class ViewStudents(tk.Frame):
         back_button.pack()
         back_button = tk.Button(self, text="Back",command=lambda: controller.show_frame(Front))
         back_button.pack()
-        self.tree = ttk.Treeview(self, columns=('ID', 'Name', 'Level', 'Gender', 'Course Code'))
+        self.tree = ttk.Treeview(self, columns=('ID', 'First Name', 'Middle Name', 'Last_Name', 'Level', 'Gender', 'Course Code'))
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         self.tree.heading('ID', text='ID')
-        self.tree.heading('Name', text='Name')
+        self.tree.heading('First Name', text='First Name')
+        self.tree.heading('Middle Name', text='Middle Name')
+        self.tree.heading('Last Name', text='Last Name')
         self.tree.heading('Level', text='Level')
         self.tree.heading('Gender', text='Gender')
         self.tree.heading('Course Code', text='Course Code')
@@ -311,7 +328,7 @@ class ViewStudents(tk.Frame):
     def populate_treeview(self):
         sorted_students = sort_students_by_id(students)
         for student in sorted_students:
-            self.tree.insert('', tk.END, values=(student.id, student.name, student.lvl, student.gender, student.course_code if student.course_code else None))
+            self.tree.insert('', tk.END, values=(student.id, student.first_name, student.middle_name, student.last_name, student.lvl, student.gender, student.course_code if student.course_code else None))
             
     def refresh_treeview(self):
         self.tree.delete(*self.tree.get_children())
@@ -325,7 +342,7 @@ class ViewStudents(tk.Frame):
             for student in students:
                 if student.id == search_id:
                     found_student = student
-                    self.tree.insert('', tk.END, values=(found_student.id, found_student.name, found_student.lvl, found_student.gender, found_student.course_code))
+                    self.tree.insert('', tk.END, values=(found_student.id, found_student.first_name, found_student.middle_name, found_student.last_name, found_student.lvl, found_student.gender, found_student.course_code))
                     break
             if not found_student:
                 messagebox.showinfo("Info", "Please input the correct ID number. \nFormat: 20XX-XXXX ")
@@ -345,14 +362,24 @@ class EditStudent(tk.Frame):
         self.id_entry.place(x=150, y=50)
         search_button = tk.Button(self, text="Search", command=self.search_student)
         search_button.place(x=300, y=50)
-        self.name_var = tk.StringVar()
+        self.first_name_var = tk.StringVar()
+        self.middle_name_var = tk.StringVar()
+        self.last_name_var = tk.StringVar()
         self.lvl_var = tk.StringVar()
         self.gender_var = tk.StringVar()
         self.course_var = tk.StringVar()
-        name_label = tk.Label(self, text="Name:")
-        name_label.place(x=10, y=100)
-        self.name_entry = tk.Entry(self, width=30, textvariable=self.name_var)
-        self.name_entry.place(x=150, y=100)
+        first_name_label = tk.Label(self, text="First Name:")
+        first_name_label.place(x=10, y=100)
+        self.first_name_entry = tk.Entry(self, width=20, textvariable=self.first_name_var)
+        self.first_name_entry.place(x=40, y=100)
+        middle_name_label = tk.Label(self, text="Middle Name:")
+        middle_name_label.place(x=70, y=100)
+        self.middle_name_entry = tk.Entry(self, width=20, textvariable=self.middle_name_var)
+        self.middle_name_entry.place(x=100, y=100)
+        last_name_label = tk.Label(self, text="Last Name:")
+        last_name_label.place(x=130, y=100)
+        self.last_name_entry = tk.Entry(self, width=20, textvariable=self.last_name_var)
+        self.last_name_entry.place(x=160, y=100)
         lvl_label = tk.Label(self, text="Year Level:")
         lvl_label.place(x=10, y=130)
         self.lvl_entry = tk.Entry(self, width=5, textvariable=self.lvl_var)
@@ -379,7 +406,9 @@ class EditStudent(tk.Frame):
                 found_student = student
                 break
         if found_student:
-            self.name_var.set(found_student.name)
+            self.first_name_var.set(found_student.first_name)
+            self.first_name_var.set(found_student.middle_name)
+            self.first_name_var.set(found_student.last_name)
             self.lvl_var.set(found_student.lvl)
             self.gender_var.set(found_student.gender)
             self.course_var.set(found_student.course_code)
@@ -388,14 +417,18 @@ class EditStudent(tk.Frame):
 
     def save_student(self):
         student_id = self.id_entry.get()
-        name = self.name_entry.get()
+        first_name = self.first_name_entry.get()
+        middle_name = self.middle_name_entry.get()
+        last_name = self.last_name_entry.get()
         lvl = self.lvl_entry.get()
         gender = self.gender_var.get()
         course_code = self.course_entry.get()
         for student in students:
             if student.course_code == course_code:
                 if student.id == student_id and student.course_code == course_code:
-                    student.name = name
+                    student.first_name = first_name
+                    student.middle_name = middle_name
+                    student.last_name = last_name
                     student.lvl = lvl
                     student.gender = gender
                     student.course_code = course_code
