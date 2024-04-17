@@ -169,32 +169,36 @@ class AddStudent(tk.Frame):
         self.id_entry = tk.Entry(self, width=30)
         self.id_entry.place(x=10,y=80)
         first_name_label = tk.Label(self, text="First Name: ")
-        first_name_label.place(x=210, y=50)
+        first_name_label.place(x=10, y=110)
+        self.first_name_entry = tk.Entry(self, width=25)
+        self.first_name_entry.place(x=80,y=110)
         middle_name_label = tk.Label(self, text="Middle Name: ")
-        middle_name_label.place(x=270, y=50)
+        middle_name_label.place(x=210, y=110)
+        self.middle_name_entry = tk.Entry(self, width=15)
+        self.middle_name_entry.place(x=300,y=110)
         last_name_label = tk.Label(self, text="Last Name: ")
-        last_name_label.place(x=330, y=50)
-        self.first_name_entry = tk.Entry(self, width=30)
-        self.name_entry.place(x=210,y=80)
+        last_name_label.place(x=410, y=110)
+        self.last_name_entry = tk.Entry(self, width=15)
+        self.last_name_entry.place(x=480,y=110)
         lvl_label = tk.Label(self, text="Year Level: ")
-        lvl_label.place(x=10, y=110)
+        lvl_label.place(x=10, y=140)
         self.lvl_entry = tk.Entry(self, width=5)
-        self.lvl_entry.place(x=10, y=140)
+        self.lvl_entry.place(x=10, y=170)
         self.gender_var = tk.StringVar()
         self.gender_var.set("Male")
         male_radio = tk.Radiobutton(self, text="Male", variable=self.gender_var, value="M")
-        male_radio.place(x=210, y=110)
+        male_radio.place(x=210, y=140)
         female_radio = tk.Radiobutton(self, text="Female", variable=self.gender_var, value="F")
-        female_radio.place(x=210, y=140)
+        female_radio.place(x=210, y=170)
         id_label = tk.Label(self, text="Course Code: ")
-        id_label.place(x=10, y=170)
+        id_label.place(x=10, y=210)
         self.course_entry = tk.Entry(self, width=30)
-        self.course_entry.place(x=10, y=200)
+        self.course_entry.place(x=10, y=230)
         
         add_button = tk.Button(self, text="Add", command=self.add_student)
-        add_button.place(x=180, y=230)
+        add_button.place(x=400, y=230)
         back_button = tk.Button(self, text="Back",command=lambda: controller.show_frame(ViewStudents))
-        back_button.place(x=180, y=260)
+        back_button.place(x=400, y=260)
         
     def add_student(self):
         id_number = self.id_entry.get()
@@ -295,15 +299,18 @@ class ViewStudents(tk.Frame):
         label = tk.Label(self, text="Student List", font=("Arial", 18))
         label.pack(pady=10, padx=10)
         self.search_var = tk.StringVar()
+        self.search_var.trace("w", self.search_student) 
         self.search_entry = tk.Entry(self, textvariable=self.search_var)
         self.search_entry.pack()
-        search_button = tk.Button(self, text="Search", command=self.search_student)
-        search_button.pack()
-        back_button = tk.Button(self, text="Clear",command=self.refresh_treeview)
-        back_button.pack()
         back_button = tk.Button(self, text="Back",command=lambda: controller.show_frame(Front))
         back_button.pack()
-        self.tree = ttk.Treeview(self, columns=('ID', 'First Name', 'Middle Name', 'Last_Name', 'Level', 'Gender', 'Course Code'))
+        add_st = tk.Button(self, text="Edit Student", command=lambda: controller.show_frame(EditStudent))
+        add_st.pack(side=tk.RIGHT, padx=5)
+        delete_st = tk.Button(self, text="Delete Student", command=lambda: controller.show_frame(DeleteStudent))
+        delete_st.pack(side=tk.RIGHT, padx=5, pady=10)
+        add_st = tk.Button(self, text="Add Student", command=lambda: controller.show_frame(AddStudent))
+        add_st.pack(side=tk.RIGHT, padx=5)
+        self.tree = ttk.Treeview(self, columns=('ID', 'First Name', 'Middle Name', 'Last Name', 'Level', 'Gender', 'Course Code'), show='headings')
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         self.tree.heading('ID', text='ID')
         self.tree.heading('First Name', text='First Name')
@@ -312,18 +319,14 @@ class ViewStudents(tk.Frame):
         self.tree.heading('Level', text='Level')
         self.tree.heading('Gender', text='Gender')
         self.tree.heading('Course Code', text='Course Code')
-        scrollbar = ttk.Scrollbar(self, orient='vertical', command=self.tree.yview)
-        scrollbar.pack(side=tk.RIGHT, fill='y')
-        self.tree.configure(yscroll=scrollbar.set)
+        self.tree.column('ID', width=100)
+        self.tree.column('First Name', width=100) 
+        self.tree.column('Middle Name', width=100) 
+        self.tree.column('Last Name', width=100)
+        self.tree.column('Level', width=50)  
+        self.tree.column('Gender', width=50) 
+        self.tree.column('Course Code', width=100)  
         self.populate_treeview()
-
-        
-        add_st = tk.Button(self, text="Add Student", command=lambda: controller.show_frame(AddStudent))
-        add_st.pack(side=tk.LEFT, padx=5)
-        delete_st = tk.Button(self, text="Delete Student", command=lambda: controller.show_frame(DeleteStudent))
-        delete_st.pack(side=tk.LEFT, padx=5, pady=10)
-        add_st = tk.Button(self, text="Edit Student", command=lambda: controller.show_frame(EditStudent))
-        add_st.pack(side=tk.LEFT, padx=5)
 
     def populate_treeview(self):
         sorted_students = sort_students_by_id(students)
@@ -334,21 +337,16 @@ class ViewStudents(tk.Frame):
         self.tree.delete(*self.tree.get_children())
         self.populate_treeview()
 
-    def search_student(self):
-        search_id = self.search_var.get()
-        if search_id:
-            self.tree.delete(*self.tree.get_children()) 
-            found_student = None
+    def search_student(self, *args):
+        search_query = self.search_var.get().lower()
+        if search_query:
+            self.tree.delete(*self.tree.get_children())
             for student in students:
-                if student.id == search_id:
-                    found_student = student
-                    self.tree.insert('', tk.END, values=(found_student.id, found_student.first_name, found_student.middle_name, found_student.last_name, found_student.lvl, found_student.gender, found_student.course_code))
-                    break
-            if not found_student:
-                messagebox.showinfo("Info", "Please input the correct ID number. \nFormat: 20XX-XXXX ")
+                student_data = [str(student.id), student.first_name, student.middle_name, student.last_name, student.lvl, student.gender, student.course_code if student.course_code else None]
+                if any(search_query in str(data).lower() for data in student_data):
+                    self.tree.insert('', tk.END, values=student_data)
         else:
-            messagebox.showinfo("Info", "Please enter a student ID to search.")
-
+            self.refresh_treeview()
             
 class EditStudent(tk.Frame):
     def __init__(self, parent, controller):
@@ -361,7 +359,7 @@ class EditStudent(tk.Frame):
         self.id_entry = tk.Entry(self, width=30)
         self.id_entry.place(x=150, y=50)
         search_button = tk.Button(self, text="Search", command=self.search_student)
-        search_button.place(x=300, y=50)
+        search_button.place(x=310, y=50)
         self.first_name_var = tk.StringVar()
         self.middle_name_var = tk.StringVar()
         self.last_name_var = tk.StringVar()
@@ -369,34 +367,34 @@ class EditStudent(tk.Frame):
         self.gender_var = tk.StringVar()
         self.course_var = tk.StringVar()
         first_name_label = tk.Label(self, text="First Name:")
-        first_name_label.place(x=10, y=100)
-        self.first_name_entry = tk.Entry(self, width=20, textvariable=self.first_name_var)
-        self.first_name_entry.place(x=40, y=100)
+        first_name_label.place(x=10, y=110)
+        self.first_name_entry = tk.Entry(self, width=25, textvariable=self.first_name_var)
+        self.first_name_entry.place(x=80,y=110)
         middle_name_label = tk.Label(self, text="Middle Name:")
-        middle_name_label.place(x=70, y=100)
-        self.middle_name_entry = tk.Entry(self, width=20, textvariable=self.middle_name_var)
-        self.middle_name_entry.place(x=100, y=100)
+        middle_name_label.place(x=210, y=110)
+        self.middle_name_entry = tk.Entry(self, width=15, textvariable=self.middle_name_var)
+        self.middle_name_entry.place(x=300,y=110)
         last_name_label = tk.Label(self, text="Last Name:")
-        last_name_label.place(x=130, y=100)
-        self.last_name_entry = tk.Entry(self, width=20, textvariable=self.last_name_var)
-        self.last_name_entry.place(x=160, y=100)
+        last_name_label.place(x=410, y=110)
+        self.last_name_entry = tk.Entry(self, width=15, textvariable=self.last_name_var)
+        self.last_name_entry.place(x=500, y=110)
         lvl_label = tk.Label(self, text="Year Level:")
-        lvl_label.place(x=10, y=130)
+        lvl_label.place(x=10, y=140)
         self.lvl_entry = tk.Entry(self, width=5, textvariable=self.lvl_var)
-        self.lvl_entry.place(x=150, y=130)
+        self.lvl_entry.place(x=80, y=140)
         gender_label = tk.Label(self, text="Gender:")
-        gender_label.place(x=10, y=160)
+        gender_label.place(x=10, y=170)
         self.gender_combo = ttk.Combobox(self, width=27, textvariable=self.gender_var, state="readonly")
         self.gender_combo['values'] = ('M', 'F')
-        self.gender_combo.place(x=150, y=160)
+        self.gender_combo.place(x=80, y=170)
         course_label = tk.Label(self, text="Course Code:")
-        course_label.place(x=10, y=190)
+        course_label.place(x=10, y=200)
         self.course_entry = tk.Entry(self, width=30, textvariable=self.course_var)
-        self.course_entry.place(x=150, y=190)
+        self.course_entry.place(x=10, y=230)
         save_button = tk.Button(self, text="Save", command=self.save_student)
-        save_button.place(x=150, y=230)
+        save_button.place(x=400, y=230)
         cancel_button = tk.Button(self, text="Cancel", command=lambda: controller.show_frame(ViewStudents))
-        cancel_button.place(x=230, y=230)
+        cancel_button.place(x=400, y=260)
 
     def search_student(self):
         student_id = self.id_entry.get()
@@ -500,24 +498,23 @@ class ViewCourses(tk.Frame):
         
         label = tk.Label(self, text="Course List", font=("Arial", 18))
         label.pack(pady=10, padx=10)
+        
         self.search_var = tk.StringVar()
+        self.search_var.trace("w", self.search_course)  
         self.search_entry = tk.Entry(self, textvariable=self.search_var)
         self.search_entry.pack()
-        search_button = tk.Button(self, text="Search", command=self.search_course)
-        search_button.pack()
-        clear_button = tk.Button(self, text="Clear", command=self.refresh_treeview)
-        clear_button.pack()
         back_button = tk.Button(self, text="Back",command=lambda: controller.show_frame(Front))
         back_button.pack()
-        self.tree = ttk.Treeview(self, columns=('Course Code', 'Course Name'))
+        self.tree = ttk.Treeview(self, columns=('Course Code', 'Course Name'), show='headings')
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         self.tree.heading('Course Code', text='Course Code')
         self.tree.heading('Course Name', text='Course Name')
+        self.tree.column('Course Code', width=100)  
+        self.tree.column('Course Name', width=200)  
+        
         scrollbar = ttk.Scrollbar(self, orient='vertical', command=self.tree.yview)
         scrollbar.pack(side=tk.RIGHT, fill='y')
         self.tree.configure(yscroll=scrollbar.set)
-
-        self.populate_treeview()
 
         add_co = tk.Button(self, text="Add Course", command=lambda: controller.show_frame(AddCourse))
         add_co.pack(side=tk.LEFT, padx=5)
@@ -526,24 +523,23 @@ class ViewCourses(tk.Frame):
         add_st = tk.Button(self, text="Edit Course", command=lambda: controller.show_frame(EditCourse))
         add_st.pack(side=tk.LEFT, padx=5)
 
-    def search_course(self):
-        search_code = self.search_var.get()
-        if search_code:
-            self.tree.delete(*self.tree.get_children())  # Clear existing items
-            found_course = None
+        self.populate_treeview()
+
+    def search_course(self, *args):
+        search_query = self.search_var.get().lower()
+        if search_query:
+            self.tree.delete(*self.tree.get_children())
             for course in courses:
-                if course.course_code == search_code:
-                    found_course = course
-                    self.tree.insert('', tk.END, values=(found_course.course_code, found_course.course_name))
-                    break
-            if not found_course:
-                messagebox.showinfo("Info", "Course not found.")
+                course_data = [course.course_code, course.course_name]
+                if any(search_query in str(data).lower() for data in course_data):
+                    self.tree.insert('', tk.END, values=course_data)
         else:
-            messagebox.showinfo("Info", "Please enter a course code to search.")
+            self.refresh_treeview()
 
     def populate_treeview(self):
         for course in courses:
             self.tree.insert('', tk.END, values=(course.course_code, course.course_name))
+
     def refresh_treeview(self):
         self.tree.delete(*self.tree.get_children())
         self.populate_treeview()
