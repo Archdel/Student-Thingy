@@ -347,6 +347,7 @@ class ViewStudents(tk.Frame):
                     self.tree.insert('', tk.END, values=student_data)
         else:
             self.refresh_treeview()
+    
             
 class EditStudent(tk.Frame):
     def __init__(self, parent, controller):
@@ -405,14 +406,24 @@ class EditStudent(tk.Frame):
                 break
         if found_student:
             self.first_name_var.set(found_student.first_name)
-            self.first_name_var.set(found_student.middle_name)
-            self.first_name_var.set(found_student.last_name)
+            self.middle_name_var.set(found_student.middle_name)
+            self.last_name_var.set(found_student.last_name)
             self.lvl_var.set(found_student.lvl)
             self.gender_var.set(found_student.gender)
             self.course_var.set(found_student.course_code)
         else:
             messagebox.showinfo("Error", "Student not found.")
+    
+    def course_exists(self, course_code: str) -> bool:
+        with open('courses.csv', 'r') as file:
+            reader = csv.DictReader(file)
 
+            for course in reader:
+                if course['course_code'] == course_code:
+                    return True
+            
+            return False
+    
     def save_student(self):
         student_id = self.id_entry.get()
         first_name = self.first_name_entry.get()
@@ -422,8 +433,8 @@ class EditStudent(tk.Frame):
         gender = self.gender_var.get()
         course_code = self.course_entry.get()
         for student in students:
-            if student.course_code == course_code:
-                if student.id == student_id and student.course_code == course_code:
+            if self.course_exists(course_code):
+                if student.id == student_id:
                     student.first_name = first_name
                     student.middle_name = middle_name
                     student.last_name = last_name
