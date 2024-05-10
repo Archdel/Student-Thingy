@@ -127,7 +127,7 @@ class DatabaseManager:
 
 db_host = 'localhost'
 db_username = 'root'
-db_password = 'password' 
+db_password = '1.47164856E+18' 
 db_name = 'mysql'  
 db_manager = DatabaseManager(db_host, db_username, db_password, db_name)
 db_manager.connect()
@@ -140,17 +140,18 @@ class StudentManager:
 
     def add_student(self, id_number, first_name, middle_name, last_name, lvl, gender, course_code):
         try:
+            course_exists_query = "SELECT 1 FROM courses WHERE course_code = %s"
+            course_exists_params = (course_code,)
+            course_exists_result = self.db_manager.execute_query(course_exists_query, course_exists_params)
+            
+            if not course_exists_result:
+                raise ValueError("Course code does not exist in the courses table.")
+
             existing_students = self.db_manager.get_students()
             if existing_students:
                 for student in existing_students:
                     if student[0] == id_number:
                         raise ValueError("ID number already exists")
-
-            query = "SELECT course_code FROM courses WHERE course_code = %s"
-            params = (course_code,)
-            result = self.db_manager.execute_query(query, params)
-            if not result:
-                raise ValueError("Course not found")
 
             query = "INSERT INTO students (id, first_name, middle_name, last_name, lvl, gender, course_code) VALUES (%s, %s, %s, %s, %s, %s, %s)"
             params = (id_number, first_name, middle_name, last_name, lvl, gender, course_code)
@@ -162,6 +163,7 @@ class StudentManager:
                 messagebox.showerror("Error", "Data truncated for column 'gender'. Make sure gender data matches the column definition.")
             else:
                 messagebox.showerror("Error", f"Database error: {e}")
+
 
     def delete_student(self, id_number):
         query = "DELETE FROM students WHERE id = %s"
@@ -400,36 +402,37 @@ class AddCourseDialog:
         self.top.destroy()
 
 class UpdateCourseDialog:
-    def __init__(self, parent, course_id, current_course_name):
+    def __init__(self, parent, course_data):
         self.top = tk.Toplevel(parent)
         self.top.title("Update Course")
 
-        self.course_id_label = ttk.Label(self.top, text="Course ID:")
-        self.course_id_label.grid(row=0, column=0, padx=5, pady=5)
-        self.course_id_entry = ttk.Entry(self.top, state='readonly')
-        self.course_id_entry.grid(row=0, column=1, padx=5, pady=5)
-        self.course_id_entry.insert(0, course_id)
+        self.course_code_label = ttk.Label(self.top, text="Course Code:")
+        self.course_code_label.grid(row=0, column=0, padx=5, pady=5)
+        self.course_code_entry = ttk.Entry(self.top)
+        self.course_code_entry.grid(row=0, column=1, padx=5, pady=5)
+        self.course_code_entry.insert(0, course_data[0])
+        self.course_code_entry.config(state='readonly')
 
-        self.current_course_name_label = ttk.Label(self.top, text="Current Name:")
-        self.current_course_name_label.grid(row=1, column=0, padx=5, pady=5)
-        self.current_course_name_entry = ttk.Entry(self.top, state='readonly')
-        self.current_course_name_entry.grid(row=1, column=1, padx=5, pady=5)
-        self.current_course_name_entry.insert(0, current_course_name)
-
-        self.new_course_name_label = ttk.Label(self.top, text="New Name:")
-        self.new_course_name_label.grid(row=2, column=0, padx=5, pady=5)
-        self.new_course_name_entry = ttk.Entry(self.top)
-        self.new_course_name_entry.grid(row=2, column=1, padx=5, pady=5)
+        self.course_name_label = ttk.Label(self.top, text="Course Name:")
+        self.course_name_label.grid(row=1, column=0, padx=5, pady=5)
+        self.course_name_entry = ttk.Entry(self.top)
+        self.course_name_entry.grid(row=1, column=1, padx=5, pady=5)
+        self.course_name_entry.insert(0, course_data[1])
 
         self.submit_button = ttk.Button(self.top, text="Submit", command=self.submit)
         self.submit_button.grid(row=3, column=0, columnspan=2, padx=5, pady=5)
 
+        self.course_data = course_data
+
     def submit(self):
-        new_course_name = self.new_course_name_entry.get()
+        course_code = self.course_code_entry.get()
+        course_name = self.course_name_entry.get().title()
+
+        course_manager = CourseManager(db_manager) 
+        course_manager.update_course(course_code, course_name)
 
         self.top.destroy()
 
-        return new_course_name
 
 
 class Front:
@@ -620,15 +623,14 @@ class Front:
             messagebox.showerror("Error", "Please select a course to edit.")
             return
 
-        course_id = self.course_tree.item(selected_item)['values'][0]
-        current_course_name = self.course_tree.item(selected_item)['values'][1]
+        course_data = self.course_tree.item(selected_item)['values']
 
-        dialog = UpdateCourseDialog(self.root, course_id, current_course_name)
-        new_course_name = dialog.submit()
-        if new_course_name:
-            self.course_manager.update_course(course_id, new_course_name)
+        dialog = UpdateCourseDialog(self.root, course_data)
+        self.root.wait_window(dialog.top)  
+        self.load_courses() 
 
-            self.load_courses()
+
+
 
 
 root = tk.Tk()
