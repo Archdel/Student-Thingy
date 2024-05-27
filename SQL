@@ -106,6 +106,35 @@ class DatabaseManager:
     def get_courses(self):
         query = "SELECT * FROM courses"
         return self.execute_query(query)
+    
+    def update_course_code_simultaneously(self, old_course_code, new_course_code):
+        try:
+            self.execute_query("SET FOREIGN_KEY_CHECKS=0")
+
+            self.update_course_code(old_course_code, new_course_code)
+
+            query = "UPDATE students SET course_code = %s WHERE course_code = %s"
+            params = (new_course_code, old_course_code)
+            self.execute_query(query, params)
+
+
+            self.execute_query("SET FOREIGN_KEY_CHECKS=1")
+        except Exception as e:
+            print(f"Error updating course codes simultaneously: {e}")
+
+    def update_course_code(self, old_course_code, new_course_code):
+        try:
+            query = "UPDATE courses SET course_code = %s WHERE course_code = %s"
+            params = (new_course_code, old_course_code)
+            self.execute_query(query, params)
+
+        except Exception as e:
+            print(f"Error updating course code: {e}")
+
+    def update_course_name(self, course_code, new_course_name):
+        query = "UPDATE courses SET course_name = %s WHERE course_code = %s"
+        params = (new_course_name, course_code)
+        self.execute_query(query, params)
 
     def close_connection(self):
         if self.connection:
@@ -132,7 +161,6 @@ db_name = 'mydb'
 db_manager = DatabaseManager(db_host, db_username, db_password, db_name)
 db_manager.connect()
 db_manager.add_foreign_key_constraint()
-
 
 class StudentManager:
     def __init__(self, db_manager):
@@ -164,7 +192,6 @@ class StudentManager:
             else:
                 messagebox.showerror("Error", f"Database error: {e}")
 
-
     def delete_student(self, id_number):
         query = "DELETE FROM students WHERE id = %s"
         params = (id_number,)
@@ -189,10 +216,16 @@ class StudentManager:
         except ValueError as e:
             messagebox.showerror("Error", str(e))
 
-
     def get_students(self):
         query = "SELECT * FROM students"
-        return self.db_manager.execute_query(query)
+        rows = self.db_manager.execute_query(query)
+        if rows:
+            students = []
+            for row in rows:
+                student = Student(*row)  # Instantiate Student objects with all attributes
+                students.append(student)
+            return students
+        return []
 
 
 class CourseManager:
@@ -212,12 +245,7 @@ class CourseManager:
 
         delete_query = "DELETE FROM courses WHERE course_code = %s"
         self.db_manager.execute_query(delete_query, (course_code,))
-
-    def update_course(self, course_code, course_name):
-        query = "UPDATE courses SET course_code = %s, course_name = %s WHERE course_code = %s"
-        params = (course_code, course_name, course_code)
-        self.db_manager.execute_query(query, params)
-
+            
     def get_courses(self):
         query = "SELECT * FROM courses"
         return self.db_manager.execute_query(query)
@@ -327,9 +355,8 @@ class UpdateStudentDialog:
         self.level_label.grid(row=4, column=0, padx=5, pady=5)
         self.level_var = tk.StringVar(self.top)
         self.level_var.set(student_data[4])
-        self.level_option = ttk.OptionMenu(self.top, self.level_var, student_data[4], "1", "2", "3","4","5","6")
+        self.level_option = ttk.OptionMenu(self.top, self.level_var, student_data[4], "1", "2", "3", "4", "5", "6")
         self.level_option.grid(row=4, column=1, padx=5, pady=5)
-
 
         self.gender_label = ttk.Label(self.top, text="Gender:")
         self.gender_label.grid(row=5, column=0, padx=5, pady=5)
@@ -353,7 +380,7 @@ class UpdateStudentDialog:
         middle_name = self.middle_name_entry.get().title()
         last_name = self.last_name_entry.get().title()
         lvl = self.level_var.get()
-        gender = GENDER_VALUES[self.gender_var.get()] 
+        gender = GENDER_VALUES[self.gender_var.get()]
         course_code = self.course_code_entry.get()
 
         if not re.match(r'^20\d{2}-\d{4}$', id_number):
@@ -371,7 +398,7 @@ class UpdateStudentDialog:
             messagebox.showerror("Error", "Course code does not exist in the courses table.")
             return
 
-        student_manager = StudentManager(db_manager) 
+        student_manager = StudentManager(db_manager)
         student_manager.update_student(id_number, first_name, middle_name, last_name, lvl, gender, course_code)
 
         self.top.destroy()
@@ -423,19 +450,31 @@ class UpdateCourseDialog:
         self.course_name_entry.insert(0, course_data[1])
 
         self.submit_button = ttk.Button(self.top, text="Submit", command=self.submit)
-        self.submit_button.grid(row=3, column=0, columnspan=2, padx=5, pady=5)
+        self.submit_button.grid(row=2, column=0, columnspan=2, padx=5, pady=5)
 
-        self.course_data = course_data
+        # Store the original course data for later use
+        self.original_course_data = course_data
 
     def submit(self):
-        course_code = self.course_code_entry.get().upper()
-        course_name = self.course_name_entry.get().title()
+        new_course_code = self.course_code_entry.get().upper()
+        new_course_name = self.course_name_entry.get().title()
 
-        course_manager = CourseManager(db_manager) 
-        course_manager.update_course(course_code, course_name)
+        if new_course_code != self.original_course_data[0]:
+            try:
+                db_manager.update_course_code_simultaneously(self.original_course_data[0], new_course_code)
+            except Exception as e:
+                messagebox.showerror("Error", f"Failed to update course code: {e}")
+                return
+
+        try:
+            db_manager.update_course_name(new_course_code, new_course_name)
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to update course name: {e}")
+            return
 
         self.top.destroy()
-
+        app.reload_students()
+        app.load_courses()
 
 
 class Front:
@@ -631,10 +670,6 @@ class Front:
         dialog = UpdateCourseDialog(self.root, course_data)
         self.root.wait_window(dialog.top)  
         self.load_courses() 
-
-
-
-
 
 root = tk.Tk()
 app = Front(root, db_manager)
