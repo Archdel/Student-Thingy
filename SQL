@@ -222,7 +222,7 @@ class StudentManager:
         if rows:
             students = []
             for row in rows:
-                student = Student(*row)  # Instantiate Student objects with all attributes
+                student = Student(*row)
                 students.append(student)
             return students
         return []
@@ -452,7 +452,6 @@ class UpdateCourseDialog:
         self.submit_button = ttk.Button(self.top, text="Submit", command=self.submit)
         self.submit_button.grid(row=2, column=0, columnspan=2, padx=5, pady=5)
 
-        # Store the original course data for later use
         self.original_course_data = course_data
 
     def submit(self):
