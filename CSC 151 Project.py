@@ -1,18 +1,11 @@
 import tkinter as tk
-from tkinter import ttk
-import mysql.connector
-import tkinter.messagebox as messagebox
+from tkinter import ttk, messagebox
+import csv
+import os
 import re
 
-GENDER_VALUES = {
-    "Male": "M",
-    "Female": "F",
-    "Other": "O"
-}
-
-
 class Student:
-    def __init__(self, id, first_name, middle_name, last_name, lvl, gender, course_code):
+    def __init__(self, id: str, first_name: str,middle_name: str,last_name: str, lvl: str, gender: str, course_code: str) -> None:
         self.id = id
         self.first_name = first_name
         self.middle_name = middle_name
@@ -21,621 +14,585 @@ class Student:
         self.gender = gender
         self.course_code = course_code
     
-    def __str__(self):
-        return f'ID: {self.id}, Name: {self.first_name} {self.middle_name} {self.last_name}, Level: {self.lvl}, Gender: {self.gender}, Course Code: {self.course_code}'
-
-    def __init__(self, id, first_name, middle_name, last_name, lvl, gender, course_code):
-        if not re.match(r'^20\d{2}-\d{4}$', id):
-            raise ValueError("Invalid ID format. Please use the format '20XX-XXXX'.")
-        self.id = id
-
-        if not first_name or not first_name.isalpha():
-            raise ValueError("First name must be a non-empty string containing only alphabetic characters.")
-        self.first_name = first_name
-
-        if not middle_name or not middle_name.isalpha():
-            raise ValueError("Middle name must be a non-empty string containing only alphabetic characters.")
-        self.middle_name = middle_name
-
-        if not last_name or not last_name.isalpha():
-            raise ValueError("Last name must be a non-empty string containing only alphabetic characters.")
-        self.last_name = last_name
-
-        if not lvl.isdigit() or int(lvl) not in range(1, 7):
-            raise ValueError("Level must be an integer between 1 and 6.")
-        self.lvl = int(lvl)
-
-        if gender not in ('Male', 'Female', 'Other'):
-            raise ValueError("Gender must be one of 'Male', 'Female', or 'Other'.")
-        self.gender = gender
-
-        if not course_code:
-            raise ValueError("Course code cannot be empty.")
-        self.course_code = course_code
+    def __str__(self) -> str:
+        return f'id: {self.id}, first_name: {self.first_name}, middle_name:{self.middle_name}, last_name: {self.last_name}, level: {self.lvl}, gender: {self.gender}, course code: {self.course_code}'
 
 class Course:
-    def __init__(self, course_code, course_name):
+    def __init__(self, course_code: str, course_name: str) -> None:
         self.course_code = course_code
         self.course_name = course_name
+
+def load_students_from_csv():
+    students = []
+    try:
+        if os.path.isfile('students.csv') and os.path.getsize('students.csv') > 0:
+            with open('students.csv', mode='r') as csvfile:
+                reader = csv.DictReader(csvfile)
+                for row in reader:
+                    if all(field in row for field in ['id', 'first_name', 'middle_name', 'last_name', 'lvl', 'gender', 'course_code']):
+                        students.append(Student(row['id'], row['first_name'], row['middle_name'], row['last_name'], row['lvl'], row['gender'], row['course_code']))
+                    else:
+                        print("Error: Missing or incomplete data for a student in students.csv")
+    except FileNotFoundError:
+        pass
+    return students
+
+def load_courses_from_csv():
+    courses = []
+    try:
+        if os.path.isfile('courses.csv') and os.path.getsize('courses.csv') > 0:
+            with open('courses.csv', mode='r') as csvfile:
+                reader = csv.DictReader(csvfile)
+                for row in reader:
+                    if 'course_code' in row and 'course_name' in row:
+                        courses.append(Course(row['course_code'], row['course_name']))
+                    else:
+                        print("Error: Missing data in courses.csv")
+    except FileNotFoundError:
+        pass
+    return courses
+
+def save_students_to_csv(students):
+    with open('students.csv', mode='w', newline='') as csvfile:
+        fieldnames = ["id", "first_name", "middle_name", "last_name", "lvl", "gender", "course_code"]
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+        for student in students:
+            writer.writerow({"id": student.id, "first_name": student.first_name,"middle_name": student.middle_name, "last_name": student.last_name, "lvl": student.lvl, "gender": student.gender, "course_code": student.course_code})
+    messagebox.showinfo("Success", "Students data saved successfully.")
+
+def save_courses_to_csv(courses):
+    with open('courses.csv', mode='w', newline='') as csvfile:
+        fieldnames = ["course_code", "course_name"]
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+        for course in courses:
+            writer.writerow({"course_code": course.course_code, "course_name": course.course_name})
+    messagebox.showinfo("Success", "Courses data saved successfully.")
+
+def add_student(students, courses, id_number, first_name, middle_name, last_name, lvl, gender, course_code):
+    if any(student.id == id_number for student in students):
+        messagebox.showerror("Error", "Student with this ID already exists.")
+        return
+
+    if not re.match(r'^\d{4}-\d{4}$', id_number):
+        messagebox.showerror("Error", "Invalid ID format. Please enter in the format XXXX-XXXX.")
+        return
+
+    if not first_name.replace(" ", "").isalpha():
+        messagebox.showerror("Error", "Invalid name format. Please enter only alphabetic characters.")
+        return
     
-    def __str__(self):
-        return f'Course Code: {self.course_code}, Course Name: {self.course_name}'
+    if not middle_name.replace(" ", "").isalpha():
+        messagebox.showerror("Error", "Invalid name format. Please enter only alphabetic characters.")
+        return
+    if not last_name.replace(" ", "").isalpha():
+        messagebox.showerror("Error", "Invalid name format. Please enter only alphabetic characters.")
+        return
 
-class DatabaseManager:
-    def __init__(self, host, username, password, database):
-        self.host = host
-        self.username = username
-        self.password = password
-        self.database = database
-        self.connection = None
+    if not lvl.isdigit() or not 1 <= int(lvl) <= 6:
+        messagebox.showerror("Error", "Invalid year level. Please enter a single digit whole number between 1 and 6.")
+        return
 
-    def connect(self):
-        try:
-            self.connection = mysql.connector.connect(
-                host=self.host,
-                user=self.username,
-                password=self.password,
-                database=self.database
-            )
-            print("Connected to MySQL database")
-        except mysql.connector.Error as e:
-            print(f"Error connecting to MySQL database: {e}")
+    if gender not in ('M', 'F'):
+        messagebox.showerror("Error", "Invalid gender. Please enter 'M' for Male or 'F' for Female.")
+        return
 
-    def execute_query(self, query, params=None):
-        if not self.connection:
-            print("Error: Database connection is not established.")
-            return None
+    if not re.match(r'^[A-Z0-9-]{4,15}$', course_code):
+        messagebox.showerror("Error", "Invalid course code format. Please enter 4-15 alphanumeric characters.")
+        return
 
-        cursor = self.connection.cursor()
-        try:
-            if params:
-                cursor.execute(query, params)
-            else:
-                cursor.execute(query)
-            result = cursor.fetchall()  
-            self.connection.commit()
-            return result
-        except mysql.connector.Error as e:
-            print(f"Error executing query: {e}")
-            return None
+    course_exist = any(course.course_code.lower() == course_code.lower() for course in courses)
+
+    if not course_exist:
+        messagebox.showerror("Error", "Course Code does not exist")
+        return
+
+    student = Student(id_number, first_name, middle_name, last_name, lvl, gender, course_code)
+    students.append(student)
+
+    save_students_to_csv(students)
+    save_courses_to_csv(courses)
+
+def delete_student(students, id_to_delete):
+    for student in students:
+        if student.id == id_to_delete:
+            students.remove(student)
+            save_students_to_csv(students) 
+            messagebox.showinfo("Success", "Student deleted successfully.")
+            return
+    messagebox.showerror("Error", "Student not found.")
+
+def delete_course(students, courses, course_code):
+    for course in courses:
+        if course.course_code.lower() == course_code.lower():
+            courses.remove(course)
+            break
+    else:
+        messagebox.showerror("Error", "Course not found.")
+        return
+
+    for student in students:
+        if student.course_code.lower() == course_code.lower():
+            student.course_code = ""
+
+    save_students_to_csv(students)
+    save_courses_to_csv(courses)
+
+    messagebox.showinfo("Success", "Course deleted successfully.")
+
+def sort_students_by_id(students):
+    return sorted(students, key=lambda student: student.id)
+
+class Front(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
         
-    def get_students(self):
-        query = "SELECT * FROM students"
-        return self.execute_query(query)
+        label = tk.Label(self, text="What would you like to do?", font=("Arial", 18))
+        label.pack(pady=10, padx=10)
         
-    def get_courses(self):
-        query = "SELECT * FROM courses"
-        return self.execute_query(query)
-
-    def close_connection(self):
-        if self.connection:
-            self.connection.close()
-            print("Database connection closed.")
-    
-    def add_foreign_key_constraint(self):
-        query = "SELECT COUNT(*) FROM information_schema.TABLE_CONSTRAINTS WHERE CONSTRAINT_NAME = 'fk_course_code' AND CONSTRAINT_SCHEMA = %s"
-        params = (self.database,)
-        result = self.execute_query(query, params)
-        if result and result[0][0] > 0:
-            print("Foreign key constraint 'fk_course_code' already exists.")
-            return
-
-        query = "ALTER TABLE students ADD CONSTRAINT fk_course_code FOREIGN KEY (course_code) REFERENCES courses(course_code) ON DELETE SET NULL"
-        self.execute_query(query)
-    
-
-
-db_host = 'localhost'
-db_username = 'root'
-db_password = 'password' 
-db_name = 'mydb'  
-db_manager = DatabaseManager(db_host, db_username, db_password, db_name)
-db_manager.connect()
-db_manager.add_foreign_key_constraint()
-
-
-class StudentManager:
-    def __init__(self, db_manager):
-        self.db_manager = db_manager
-
-    def add_student(self, id_number, first_name, middle_name, last_name, lvl, gender, course_code):
-        try:
-            course_exists_query = "SELECT 1 FROM courses WHERE course_code = %s"
-            course_exists_params = (course_code,)
-            course_exists_result = self.db_manager.execute_query(course_exists_query, course_exists_params)
-            
-            if not course_exists_result:
-                raise ValueError("Course code does not exist in the courses table.")
-
-            existing_students = self.db_manager.get_students()
-            if existing_students:
-                for student in existing_students:
-                    if student[0] == id_number:
-                        raise ValueError("ID number already exists")
-
-            query = "INSERT INTO students (id, first_name, middle_name, last_name, lvl, gender, course_code) VALUES (%s, %s, %s, %s, %s, %s, %s)"
-            params = (id_number, first_name, middle_name, last_name, lvl, gender, course_code)
-            self.db_manager.execute_query(query, params)
-        except ValueError as e:
-            messagebox.showerror("Error", str(e))
-        except mysql.connector.Error as e:
-            if e.errno == 1265 and e.sqlstate == '01000':
-                messagebox.showerror("Error", "Data truncated for column 'gender'. Make sure gender data matches the column definition.")
-            else:
-                messagebox.showerror("Error", f"Database error: {e}")
-
-
-    def delete_student(self, id_number):
-        query = "DELETE FROM students WHERE id = %s"
-        params = (id_number,)
-        self.db_manager.execute_query(query, params)
-
-    def update_student(self, id_number, first_name, middle_name, last_name, lvl, gender, course_code):
-        try:
-            if not re.match(r'^20\d{2}-\d{4}$', id_number):
-                raise ValueError("Invalid ID format. Please use the format '20XX-XXXX'.")
-
-            if not (lvl.isdigit() and 1 <= int(lvl) <= 6):
-                raise ValueError("Invalid level. Please enter a number between 1 and 6.")
-            query = "SELECT course_code FROM courses WHERE course_code = %s"
-            params = (course_code,)
-            result = self.db_manager.execute_query(query, params)
-            if not result:
-                raise ValueError("Course code does not exist in the courses table.")
-
-            query = "UPDATE students SET first_name = %s, middle_name = %s, last_name = %s, lvl = %s, gender = %s, course_code = %s WHERE id = %s"
-            params = (first_name, middle_name, last_name, lvl, gender, course_code, id_number)
-            self.db_manager.execute_query(query, params)
-        except ValueError as e:
-            messagebox.showerror("Error", str(e))
-
-
-    def get_students(self):
-        query = "SELECT * FROM students"
-        return self.db_manager.execute_query(query)
-
-
-class CourseManager:
-    def __init__(self, db_manager):
-        self.db_manager = db_manager
-
-    def add_course(self, course_code, course_name):
-        course_code = course_code.upper()
-        course_name = course_name.title()
-        query = "INSERT INTO courses (course_code, course_name) VALUES (%s, %s)"
-        params = (course_code, course_name)
-        self.db_manager.execute_query(query, params)
-
-    def delete_course(self, course_code):
-        update_query = "UPDATE students SET course_code = NULL WHERE course_code = %s"
-        self.db_manager.execute_query(update_query, (course_code,))
-
-        delete_query = "DELETE FROM courses WHERE course_code = %s"
-        self.db_manager.execute_query(delete_query, (course_code,))
-
-    def update_course(self, course_code, course_name):
-        query = "UPDATE courses SET course_code = %s, course_name = %s WHERE course_code = %s"
-        params = (course_code, course_name, course_code)
-        self.db_manager.execute_query(query, params)
-
-    def get_courses(self):
-        query = "SELECT * FROM courses"
-        return self.db_manager.execute_query(query)
-
-class AddStudentDialog:
-    def __init__(self, parent):
-        self.top = tk.Toplevel(parent)
-        self.top.title("Add Student")
-
-        self.id_label = ttk.Label(self.top, text="ID:")
-        self.id_label.grid(row=0, column=0, padx=5, pady=5)
-        self.id_entry = ttk.Entry(self.top)
-        self.id_entry.grid(row=0, column=1, padx=5, pady=5)
-
-        self.first_name_label = ttk.Label(self.top, text="First Name:")
-        self.first_name_label.grid(row=1, column=0, padx=5, pady=5)
-        self.first_name_entry = ttk.Entry(self.top)
-        self.first_name_entry.grid(row=1, column=1, padx=5, pady=5)
-
-        self.middle_name_label = ttk.Label(self.top, text="Middle Name:")
-        self.middle_name_label.grid(row=2, column=0, padx=5, pady=5)
-        self.middle_name_entry = ttk.Entry(self.top)
-        self.middle_name_entry.grid(row=2, column=1, padx=5, pady=5)
-
-        self.last_name_label = ttk.Label(self.top, text="Last Name:")
-        self.last_name_label.grid(row=3, column=0, padx=5, pady=5)
-        self.last_name_entry = ttk.Entry(self.top)
-        self.last_name_entry.grid(row=3, column=1, padx=5, pady=5)
-
-        self.level_label = ttk.Label(self.top, text="Year Level:")
-        self.level_label.grid(row=4, column=0, padx=5, pady=5)
-        self.level_var = tk.StringVar(self.top)
-        self.level_var.set("") 
-        self.level_option = ttk.OptionMenu(self.top, self.level_var,"", "1", "2", "3","4","5","6")
-        self.level_option.grid(row=4, column=1, padx=5, pady=5)
-
-        self.gender_label = ttk.Label(self.top, text="Gender:")
-        self.gender_label.grid(row=5, column=0, padx=5, pady=5)
-        self.gender_var = tk.StringVar(self.top)
-        self.gender_var.set("") 
-        self.gender_option = ttk.OptionMenu(self.top, self.gender_var,"", "Male", "Female", "Other")
-        self.gender_option.grid(row=5, column=1, padx=5, pady=5)
-
-        self.course_code_label = ttk.Label(self.top, text="Course Code:")
-        self.course_code_label.grid(row=6, column=0, padx=5, pady=5)
-        self.course_code_entry = ttk.Entry(self.top)
-        self.course_code_entry.grid(row=6, column=1, padx=5, pady=5)
-
-        self.submit_button = ttk.Button(self.top, text="Submit", command=self.submit)
-        self.submit_button.grid(row=7, column=0, columnspan=2, padx=5, pady=5)
-
-    def submit(self):
-        id_number = self.id_entry.get()
-        first_name = self.first_name_entry.get().title()
-        middle_name = self.middle_name_entry.get().title()
-        last_name = self.last_name_entry.get().title()
-        lvl = self.level_var.get()
-        gender = GENDER_VALUES[self.gender_var.get()]
-        course_code = self.course_code_entry.get()
-
-        if not re.match(r'^20\d{2}-\d{4}$', id_number):
-            messagebox.showerror("Error", "Invalid ID format. Please use the format '20XX-XXXX'.")
-            return
-
-        if not (lvl.isdigit() and 1 <= int(lvl) <= 6):
-            messagebox.showerror("Error", "Invalid level. Please enter a number between 1 and 6.")
-            return
-
-        student_manager = StudentManager(db_manager) 
-        student_manager.add_student(id_number, first_name, middle_name, last_name, lvl, gender, course_code)
-
-        self.top.destroy()
-
-
-
-class UpdateStudentDialog:
-    def __init__(self, parent, student_data):
-        self.top = tk.Toplevel(parent)
-        self.top.title("Update Student")
-
-        self.id_label = ttk.Label(self.top, text="ID:")
-        self.id_label.grid(row=0, column=0, padx=5, pady=5)
-        self.id_entry = ttk.Entry(self.top)
-        self.id_entry.grid(row=0, column=1, padx=5, pady=5)
-        self.id_entry.insert(0, student_data[0])
-        self.id_entry.config(state='readonly')
-
-        self.first_name_label = ttk.Label(self.top, text="First Name:")
-        self.first_name_label.grid(row=1, column=0, padx=5, pady=5)
-        self.first_name_entry = ttk.Entry(self.top)
-        self.first_name_entry.grid(row=1, column=1, padx=5, pady=5)
-        self.first_name_entry.insert(0, student_data[1])
-
-        self.middle_name_label = ttk.Label(self.top, text="Middle Name:")
-        self.middle_name_label.grid(row=2, column=0, padx=5, pady=5)
-        self.middle_name_entry = ttk.Entry(self.top)
-        self.middle_name_entry.grid(row=2, column=1, padx=5, pady=5)
-        self.middle_name_entry.insert(0, student_data[2])
-
-        self.last_name_label = ttk.Label(self.top, text="Last Name:")
-        self.last_name_label.grid(row=3, column=0, padx=5, pady=5)
-        self.last_name_entry = ttk.Entry(self.top)
-        self.last_name_entry.grid(row=3, column=1, padx=5, pady=5)
-        self.last_name_entry.insert(0, student_data[3])
-
-        self.level_label = ttk.Label(self.top, text="Year Level:")
-        self.level_label.grid(row=4, column=0, padx=5, pady=5)
-        self.level_var = tk.StringVar(self.top)
-        self.level_var.set(student_data[4])
-        self.level_option = ttk.OptionMenu(self.top, self.level_var, student_data[4], "1", "2", "3","4","5","6")
-        self.level_option.grid(row=4, column=1, padx=5, pady=5)
-
-
-        self.gender_label = ttk.Label(self.top, text="Gender:")
-        self.gender_label.grid(row=5, column=0, padx=5, pady=5)
-        self.gender_var = tk.StringVar(self.top)
-        self.gender_var.set(student_data[5])
-        self.gender_option = ttk.OptionMenu(self.top, self.gender_var, student_data[5], "Male", "Female", "Other")
-        self.gender_option.grid(row=5, column=1, padx=5, pady=5)
-
-        self.course_code_label = ttk.Label(self.top, text="Course Code:")
-        self.course_code_label.grid(row=6, column=0, padx=5, pady=5)
-        self.course_code_entry = ttk.Entry(self.top)
-        self.course_code_entry.grid(row=6, column=1, padx=5, pady=5)
-        self.course_code_entry.insert(0, student_data[6])
-
-        self.submit_button = ttk.Button(self.top, text="Submit", command=self.submit)
-        self.submit_button.grid(row=7, column=0, columnspan=2, padx=5, pady=5)
-
-    def submit(self):
-        id_number = self.id_entry.get()
-        first_name = self.first_name_entry.get().title()
-        middle_name = self.middle_name_entry.get().title()
-        last_name = self.last_name_entry.get().title()
-        lvl = self.level_var.get()
-        gender = GENDER_VALUES[self.gender_var.get()] 
-        course_code = self.course_code_entry.get()
-
-        if not re.match(r'^20\d{2}-\d{4}$', id_number):
-            messagebox.showerror("Error", "Invalid ID format. Please use the format '20XX-XXXX'.")
-            return
-
-        if not (lvl.isdigit() and 1 <= int(lvl) <= 6):
-            messagebox.showerror("Error", "Invalid level. Please enter a number between 1 and 6.")
-            return
-
-        query = "SELECT course_code FROM courses WHERE course_code = %s"
-        params = (course_code,)
-        result = db_manager.execute_query(query, params)
-        if not result:
-            messagebox.showerror("Error", "Course code does not exist in the courses table.")
-            return
-
-        student_manager = StudentManager(db_manager) 
-        student_manager.update_student(id_number, first_name, middle_name, last_name, lvl, gender, course_code)
-
-        self.top.destroy()
-
-
-class AddCourseDialog:
-    def __init__(self, parent):
-        self.top = tk.Toplevel(parent)
-        self.top.title("Add Course")
-
-        self.course_code_label = ttk.Label(self.top, text="Course Code:")
-        self.course_code_label.grid(row=0, column=0, padx=5, pady=5)
-        self.course_code_entry = ttk.Entry(self.top)
-        self.course_code_entry.grid(row=0, column=1, padx=5, pady=5)
-
-        self.course_name_label = ttk.Label(self.top, text="Course Name:")
-        self.course_name_label.grid(row=1, column=0, padx=5, pady=5)
-        self.course_name_entry = ttk.Entry(self.top)
-        self.course_name_entry.grid(row=1, column=1, padx=5, pady=5)
-
-        self.submit_button = ttk.Button(self.top, text="Submit", command=self.submit)
-        self.submit_button.grid(row=2, column=0, columnspan=2, padx=5, pady=5)
-
-    def submit(self):
-
-        course_code = self.course_code_entry.get()
-        course_name = self.course_name_entry.get()
-
-        course_manager = CourseManager(db_manager)
-        course_manager.add_course(course_code, course_name)
-
-        self.top.destroy()
-
-class UpdateCourseDialog:
-    def __init__(self, parent, course_data):
-        self.top = tk.Toplevel(parent)
-        self.top.title("Update Course")
-
-        self.course_code_label = ttk.Label(self.top, text="Course Code:")
-        self.course_code_label.grid(row=0, column=0, padx=5, pady=5)
-        self.course_code_entry = ttk.Entry(self.top)
-        self.course_code_entry.grid(row=0, column=1, padx=5, pady=5)
-        self.course_code_entry.insert(0, course_data[0])
-
-        self.course_name_label = ttk.Label(self.top, text="Course Name:")
-        self.course_name_label.grid(row=1, column=0, padx=5, pady=5)
-        self.course_name_entry = ttk.Entry(self.top)
-        self.course_name_entry.grid(row=1, column=1, padx=5, pady=5)
-        self.course_name_entry.insert(0, course_data[1])
-
-        self.submit_button = ttk.Button(self.top, text="Submit", command=self.submit)
-        self.submit_button.grid(row=3, column=0, columnspan=2, padx=5, pady=5)
-
-        self.course_data = course_data
-
-    def submit(self):
-        course_code = self.course_code_entry.get().upper()
-        course_name = self.course_name_entry.get().title()
-
-        course_manager = CourseManager(db_manager) 
-        course_manager.update_course(course_code, course_name)
-
-        self.top.destroy()
-
-
-
-class Front:
-    def __init__(self, root, db_manager):
-        self.root = root
-        self.db_manager = db_manager
-        self.student_manager = StudentManager(db_manager)
-        self.course_manager = CourseManager(db_manager)
-        self.root.title("Student and Course Viewer")
-
-        self.notebook = ttk.Notebook(root)
-        self.notebook.pack(fill='both', expand=True)
-
-        self.student_tab = ttk.Frame(self.notebook)
-        self.course_tab = ttk.Frame(self.notebook)
-        self.notebook.add(self.student_tab, text='View Students')
-        self.notebook.add(self.course_tab, text='View Courses')
-
-        self.student_search_var = tk.StringVar()
-        self.student_search_var.trace_add('write', self.filter_students)
-        self.student_search_entry = ttk.Entry(self.student_tab, textvariable=self.student_search_var)
-        self.student_search_entry.pack(fill='x', padx=10, pady=(10, 5))
-
-        self.course_search_var = tk.StringVar()
-        self.course_search_var.trace_add('write', self.filter_courses)
-        self.course_search_entry = ttk.Entry(self.course_tab, textvariable=self.course_search_var)
-        self.course_search_entry.pack(fill='x', padx=10, pady=(10, 5))
-
-        self.student_label = ttk.Label(self.student_tab, text='Student Information')
-        self.student_label.pack(pady=10)
-        self.student_tree = ttk.Treeview(self.student_tab, columns=('ID', 'First Name', 'Middle Name', 'Last Name', 'Level', 'Gender', 'Course Code'), show='headings')
-        self.student_tree.heading('ID', text='ID')
-        self.student_tree.heading('First Name', text='First Name')
-        self.student_tree.heading('Middle Name', text='Middle Name')
-        self.student_tree.heading('Last Name', text='Last Name')
-        self.student_tree.heading('Level', text='Level')
-        self.student_tree.heading('Gender', text='Gender')
-        self.student_tree.heading('Course Code', text='Course Code')
-        self.student_tree.pack(fill='both', expand=True)
-
-        self.student_buttons_frame = ttk.Frame(self.student_tab)
-        self.student_buttons_frame.pack(pady=10)
-        self.add_student_button = ttk.Button(self.student_buttons_frame, text='Add', command=self.add_student)
-        self.add_student_button.grid(row=0, column=0, padx=5)
-        self.delete_student_button = ttk.Button(self.student_buttons_frame, text='Delete', command=self.delete_student)
-        self.delete_student_button.grid(row=0, column=1, padx=5)
-        self.edit_student_button = ttk.Button(self.student_buttons_frame, text='Edit', command=self.edit_student)
-        self.edit_student_button.grid(row=0, column=2, padx=5)
-
-        self.course_label = ttk.Label(self.course_tab, text='Course Information')
-        self.course_label.pack(pady=10)
-        self.course_tree = ttk.Treeview(self.course_tab, columns=('Course Code', 'Course Name'), show='headings')
-        self.course_tree.heading('Course Code', text='Course Code')
-        self.course_tree.heading('Course Name', text='Course Name')
-        self.course_tree.pack(fill='both', expand=True)
-
-        self.course_buttons_frame = ttk.Frame(self.course_tab)
-        self.course_buttons_frame.pack(pady=10)
-        self.add_course_button = ttk.Button(self.course_buttons_frame, text='Add', command=self.add_course)
-        self.add_course_button.grid(row=0, column=0, padx=5)
-        self.delete_course_button = ttk.Button(self.course_buttons_frame, text='Delete', command=self.delete_course)
-        self.delete_course_button.grid(row=0, column=1, padx=5)
-        self.edit_course_button = ttk.Button(self.course_buttons_frame, text='Edit', command=self.edit_course)
-        self.edit_course_button.grid(row=0, column=2, padx=5)
-
-        self.load_students()
-        self.load_courses()
-
-    def reload_students(self):
-        for row in self.student_tree.get_children():
-            self.student_tree.delete(row)
-
-        students = self.db_manager.get_students()
-        if students:
-            for student in students:
-                self.student_tree.insert('', 'end', values=student)
-
-    def filter_students(self, *args):
-        search_keyword = self.student_search_var.get().strip().lower()
-
-        for row in self.student_tree.get_children():
-            self.student_tree.delete(row)
-
-        students = self.db_manager.get_students()
-        if students:
-            for student in students:
-                if any(search_keyword in str(field).lower() for field in student):
-                    self.student_tree.insert('', 'end', values=student)
-
-    def filter_courses(self, *args):
-        search_keyword = self.course_search_var.get().strip().lower()
-
-        for row in self.course_tree.get_children():
-            self.course_tree.delete(row)
-
-        courses = self.db_manager.get_courses()
-        if courses:
-            for course in courses:
-                if any(search_keyword in str(field).lower() for field in course):
-                    self.course_tree.insert('', 'end', values=course)
-
-    def load_students(self):
-        for row in self.student_tree.get_children():
-            self.student_tree.delete(row)
-
-        students = self.db_manager.get_students()
-        if students:
-            for student in students:
-                gender = student[5]
-                if gender == 'M':
-                    gender = 'Male'
-                elif gender == 'F':
-                    gender = 'Female'
-                else:
-                    gender = 'Other'
-                student = list(student)
-                student[5] = gender
-                self.student_tree.insert('', 'end', values=student)
-
-    def load_courses(self):
-        for row in self.course_tree.get_children():
-            self.course_tree.delete(row)
-
-        courses = self.db_manager.get_courses()
-        if courses:
-            for course in courses:
-                self.course_tree.insert('', 'end', values=course)
-    
+        view_list = tk.Button(self, text="View Students", command=lambda: controller.show_frame(ViewStudents))
+        view_list.pack()
+        add_st = tk.Button(self, text="View Courses", command=lambda: controller.show_frame(ViewCourses))
+        add_st.pack()
+
+class AddStudent(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        
+        label = tk.Label(self, text="Please fill out the information", font=("Arial", 18))
+        label.pack(pady=10, padx=10)
+        id_label = tk.Label(self, text="ID Number: ")
+        id_label.place(x=10, y=50)
+        self.id_entry = tk.Entry(self, width=30)
+        self.id_entry.place(x=10,y=80)
+        first_name_label = tk.Label(self, text="First Name: ")
+        first_name_label.place(x=10, y=110)
+        self.first_name_entry = tk.Entry(self, width=25)
+        self.first_name_entry.place(x=80,y=110)
+        middle_name_label = tk.Label(self, text="Middle Name: ")
+        middle_name_label.place(x=210, y=110)
+        self.middle_name_entry = tk.Entry(self, width=15)
+        self.middle_name_entry.place(x=300,y=110)
+        last_name_label = tk.Label(self, text="Last Name: ")
+        last_name_label.place(x=410, y=110)
+        self.last_name_entry = tk.Entry(self, width=15)
+        self.last_name_entry.place(x=480,y=110)
+        lvl_label = tk.Label(self, text="Year Level: ")
+        lvl_label.place(x=10, y=140)
+        self.lvl_entry = tk.Entry(self, width=5)
+        self.lvl_entry.place(x=10, y=170)
+        self.gender_var = tk.StringVar()
+        self.gender_var.set("Male")
+        male_radio = tk.Radiobutton(self, text="Male", variable=self.gender_var, value="M")
+        male_radio.place(x=210, y=140)
+        female_radio = tk.Radiobutton(self, text="Female", variable=self.gender_var, value="F")
+        female_radio.place(x=210, y=170)
+        id_label = tk.Label(self, text="Course Code: ")
+        id_label.place(x=10, y=210)
+        self.course_entry = tk.Entry(self, width=30)
+        self.course_entry.place(x=10, y=230)
+        
+        add_button = tk.Button(self, text="Add", command=self.add_student)
+        add_button.place(x=400, y=230)
+        back_button = tk.Button(self, text="Back",command=lambda: controller.show_frame(ViewStudents))
+        back_button.place(x=400, y=260)
+        
     def add_student(self):
-        dialog = AddStudentDialog(self.root)
-        self.root.wait_window(dialog.top)
+        id_number = self.id_entry.get()
+        first_name = self.first_name_entry.get().upper().strip()
+        middle_name = self.middle_name_entry.get().upper().strip()
+        last_name = self.last_name_entry.get().upper().strip()
+        lvl = self.lvl_entry.get()
+        gender = self.gender_var.get()
+        course_code = self.course_entry.get().upper().strip()
+        
+        add_student(students, courses, id_number, first_name, middle_name, last_name, lvl, gender, course_code)
+        self.controller.frames[ViewStudents].refresh_treeview()
 
-        self.load_students()
+    
 
-    def delete_student(self):
-        selected_item = self.student_tree.selection()
-        if not selected_item:
-            messagebox.showerror("Error", "Please select a student to delete.")
-            return
+class DeleteStudent(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
 
-        confirm = messagebox.askyesno("Confirm Deletion", "Are you sure you want to delete this student?")
-        if confirm:
-            student_id = self.student_tree.item(selected_item)['values'][0]
+        label = tk.Label(self, text="Please fill out the information", font=("Arial", 18))
+        label.pack(pady=10, padx=10)
+        id_label = tk.Label(self, text="ID Number:")
+        id_label.place(x=10, y=50)
+        self.id_entry = tk.Entry(self, width=30)
+        self.id_entry.place(x=10, y=80)
+        
+        delete_button = tk.Button(self, text="Delete", command=self.confirm_delete_student)
+        delete_button.place(x=75, y=110)
+        back_button = tk.Button(self, text="Back",command=lambda: controller.show_frame(ViewStudents))
+        back_button.place(x=180, y=260)
 
-            self.student_manager.delete_student(student_id)
+    def confirm_delete_student(self):
+        id_to_delete = self.id_entry.get()
+        confirmation = messagebox.askyesno("Confirmation", f"Are you sure you want to delete student with ID {id_to_delete}?")
+        if confirmation:
+            delete_student(students, id_to_delete)
+            self.controller.frames[ViewStudents].refresh_treeview()
 
-            self.load_students()
-
-    def edit_student(self):
-        selected_item = self.student_tree.selection()
-        if not selected_item:
-            messagebox.showerror("Error", "Please select a student to edit.")
-            return
-
-        student_data = self.student_tree.item(selected_item)['values']
-
-        dialog = UpdateStudentDialog(self.root, student_data)
-        self.root.wait_window(dialog.top)
-
-        self.load_students()
+class AddCourse(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        
+        label = tk.Label(self, text="Please fill out the information", font=("Arial", 18))
+        label.pack(pady=10, padx=10)
+        label = tk.Label(self, text="Course Code:")
+        label.place(x=10, y=50)
+        self.code_entry = tk.Entry(self, width=30)
+        self.code_entry.place(x=110, y=50)
+        label = tk.Label(self, text="Course Name:")
+        label.place(x=10, y=80)
+        self.course_entry = tk.Entry(self, width=30)
+        self.course_entry.place(x=110, y=80)
+        
+        add_button = tk.Button(self, text="Add", command=self.add_course)
+        add_button.place(x=110, y=110)
+        back_button = tk.Button(self, text="Back",command=lambda: controller.show_frame(ViewCourses))
+        back_button.place(x=180, y=260)
 
     def add_course(self):
-        dialog = AddCourseDialog(self.root)
-        self.root.wait_window(dialog.top)
-
-        self.load_courses()
-
-    def delete_course(self):
-        selected_item = self.course_tree.selection()
-        if not selected_item:
-            messagebox.showerror("Error", "Please select a course to delete.")
+        course_code = self.code_entry.get().upper().strip()
+        if any(course.course_code == course_code for course in courses):
+            messagebox.showerror("Error", "Course with this Course Code already exists.")
             return
+        course_name = self.course_entry.get().upper().strip()
+        courses.append(Course(course_code, course_name))
+        save_courses_to_csv(courses)
+        self.controller.frames[ViewStudents].refresh_treeview()
 
-        confirm = messagebox.askyesno("Confirm Deletion", "Are you sure you want to delete this course?")
-        if confirm:
-            course_id = self.course_tree.item(selected_item)['values'][0]
+class DeleteCourse(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        label = tk.Label(self, text="Please fill out the information", font=("Arial", 18))
+        label.pack(pady=10, padx=10)
+        label = tk.Label(self, text="Course Code:")
+        label.place(x=10, y=50)
+        self.code_entry = tk.Entry(self, width=30)
+        self.code_entry.place(x=110, y=50)
+        back_button = tk.Button(self, text="Back",command=lambda: controller.show_frame(ViewCourses))
+        back_button.place(x=180, y=260)
+        
+        delete_button = tk.Button(self, text="Delete", command=self.confirm_delete_course)
+        delete_button.place(x=110, y=80)
 
-            self.course_manager.delete_course(course_id)
+    def confirm_delete_course(self):
+        course_code = self.code_entry.get().upper().strip()
+        confirmation = messagebox.askyesno("Confirmation", f"Are you sure you want to delete course with code {course_code}?")
+        if confirmation:
+            delete_course(students, courses, course_code)
+            self.controller.frames[ViewStudents].refresh_treeview()
 
-            self.load_courses()
+class ViewStudents(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        label = tk.Label(self, text="Student List", font=("Arial", 18))
+        label.pack(pady=10, padx=10)
+        self.search_var = tk.StringVar()
+        self.search_var.trace("w", self.search_student) 
+        self.search_entry = tk.Entry(self, textvariable=self.search_var)
+        self.search_entry.pack()
+        back_button = tk.Button(self, text="Back",command=lambda: controller.show_frame(Front))
+        back_button.pack()
+        add_st = tk.Button(self, text="Edit Student", command=lambda: controller.show_frame(EditStudent))
+        add_st.pack(side=tk.RIGHT, padx=5)
+        delete_st = tk.Button(self, text="Delete Student", command=lambda: controller.show_frame(DeleteStudent))
+        delete_st.pack(side=tk.RIGHT, padx=5, pady=10)
+        add_st = tk.Button(self, text="Add Student", command=lambda: controller.show_frame(AddStudent))
+        add_st.pack(side=tk.RIGHT, padx=5)
+        self.tree = ttk.Treeview(self, columns=('ID', 'First Name', 'Middle Name', 'Last Name', 'Level', 'Gender', 'Course Code'), show='headings')
+        self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        self.tree.heading('ID', text='ID')
+        self.tree.heading('First Name', text='First Name')
+        self.tree.heading('Middle Name', text='Middle Name')
+        self.tree.heading('Last Name', text='Last Name')
+        self.tree.heading('Level', text='Level')
+        self.tree.heading('Gender', text='Gender')
+        self.tree.heading('Course Code', text='Course Code')
+        self.tree.column('ID', width=100)
+        self.tree.column('First Name', width=100) 
+        self.tree.column('Middle Name', width=100) 
+        self.tree.column('Last Name', width=100)
+        self.tree.column('Level', width=50)  
+        self.tree.column('Gender', width=50) 
+        self.tree.column('Course Code', width=100)  
+        self.populate_treeview()
 
-            self.reload_students()
+    def populate_treeview(self):
+        sorted_students = sort_students_by_id(students)
+        for student in sorted_students:
+            self.tree.insert('', tk.END, values=(student.id, student.first_name, student.middle_name, student.last_name, student.lvl, student.gender, student.course_code if student.course_code else None))
+            
+    def refresh_treeview(self):
+        self.tree.delete(*self.tree.get_children())
+        self.populate_treeview()
+
+    def search_student(self, *args):
+        search_query = self.search_var.get().lower()
+        if search_query:
+            self.tree.delete(*self.tree.get_children())
+            for student in students:
+                student_data = [str(student.id), student.first_name, student.middle_name, student.last_name, student.lvl, student.gender, student.course_code if student.course_code else None]
+                if any(search_query in str(data).lower() for data in student_data):
+                    self.tree.insert('', tk.END, values=student_data)
+        else:
+            self.refresh_treeview()
+    
+            
+class EditStudent(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        label = tk.Label(self, text="Edit Student Information", font=("Arial", 18))
+        label.pack(pady=10, padx=10)
+        id_label = tk.Label(self, text="Enter ID Number:")
+        id_label.place(x=10, y=50)
+        self.id_entry = tk.Entry(self, width=30)
+        self.id_entry.place(x=150, y=50)
+        search_button = tk.Button(self, text="Search", command=self.search_student)
+        search_button.place(x=310, y=50)
+        self.first_name_var = tk.StringVar()
+        self.middle_name_var = tk.StringVar()
+        self.last_name_var = tk.StringVar()
+        self.lvl_var = tk.StringVar()
+        self.gender_var = tk.StringVar()
+        self.course_var = tk.StringVar()
+        first_name_label = tk.Label(self, text="First Name:")
+        first_name_label.place(x=10, y=110)
+        self.first_name_entry = tk.Entry(self, width=25, textvariable=self.first_name_var)
+        self.first_name_entry.place(x=80,y=110)
+        middle_name_label = tk.Label(self, text="Middle Name:")
+        middle_name_label.place(x=210, y=110)
+        self.middle_name_entry = tk.Entry(self, width=15, textvariable=self.middle_name_var)
+        self.middle_name_entry.place(x=300,y=110)
+        last_name_label = tk.Label(self, text="Last Name:")
+        last_name_label.place(x=410, y=110)
+        self.last_name_entry = tk.Entry(self, width=15, textvariable=self.last_name_var)
+        self.last_name_entry.place(x=500, y=110)
+        lvl_label = tk.Label(self, text="Year Level:")
+        lvl_label.place(x=10, y=140)
+        self.lvl_entry = tk.Entry(self, width=5, textvariable=self.lvl_var)
+        self.lvl_entry.place(x=80, y=140)
+        gender_label = tk.Label(self, text="Gender:")
+        gender_label.place(x=10, y=170)
+        self.gender_combo = ttk.Combobox(self, width=27, textvariable=self.gender_var, state="readonly")
+        self.gender_combo['values'] = ('M', 'F')
+        self.gender_combo.place(x=80, y=170)
+        course_label = tk.Label(self, text="Course Code:")
+        course_label.place(x=10, y=200)
+        self.course_entry = tk.Entry(self, width=30, textvariable=self.course_var)
+        self.course_entry.place(x=10, y=230)
+        save_button = tk.Button(self, text="Save", command=self.save_student)
+        save_button.place(x=400, y=230)
+        cancel_button = tk.Button(self, text="Cancel", command=lambda: controller.show_frame(ViewStudents))
+        cancel_button.place(x=400, y=260)
+
+    def search_student(self):
+        student_id = self.id_entry.get().upper().strip()
+        found_student = None
+        for student in students:
+            if student.id == student_id:
+                found_student = student
+                break
+        if found_student:
+            self.first_name_var.set(found_student.first_name)
+            self.middle_name_var.set(found_student.middle_name)
+            self.last_name_var.set(found_student.last_name)
+            self.lvl_var.set(found_student.lvl)
+            self.gender_var.set(found_student.gender)
+            self.course_var.set(found_student.course_code)
+        else:
+            messagebox.showinfo("Error", "Student not found.")
+    
+    def course_exists(self, course_code: str) -> bool:
+        with open('courses.csv', 'r') as file:
+            reader = csv.DictReader(file)
+
+            for course in reader:
+                if course['course_code'] == course_code:
+                    return True
+            
+            return False
+    
+    def save_student(self):
+        student_id = self.id_entry.get()
+        first_name = self.first_name_entry.get().upper().strip()
+        middle_name = self.middle_name_entry.get().upper().strip()
+        last_name = self.last_name_entry.get().upper().strip()
+        lvl = self.lvl_entry.get()
+        gender = self.gender_var.get().upper().strip()
+        course_code = self.course_entry.get().upper().strip()
+        for student in students:
+            if self.course_exists(course_code):
+                if student.id == student_id:
+                    student.first_name = first_name
+                    student.middle_name = middle_name
+                    student.last_name = last_name
+                    student.lvl = lvl
+                    student.gender = gender
+                    student.course_code = course_code
+                    save_students_to_csv(students)
+                    self.controller.frames[ViewStudents].refresh_treeview()
+                    messagebox.showinfo("Success", "Student information updated successfully.")
+                    self.controller.show_frame(Front)
+                    return
+                return messagebox.showinfo("Error", "Student not found.")
+            return messagebox.showinfo("Error", "Course Code not found.")
+
+class EditCourse(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        
+        label = tk.Label(self, text="Edit Course Information", font=("Arial", 18))
+        label.pack(pady=10, padx=10)
+        
+        code_label = tk.Label(self, text="Enter Course Code:")
+        code_label.place(x=10, y=50)
+        self.code_entry = tk.Entry(self, width=30)
+        self.code_entry.place(x=150, y=50)
+        
+        search_button = tk.Button(self, text="Search", command=self.search_course)
+        search_button.place(x=300, y=50)
+
+        self.ccode_var = tk.StringVar()
+        ccode_label = tk.Label(self, text="Course Name:")
+        ccode_label.place(x=400, y=80)
+        self.ccode_entry = tk.Entry(self, width=30, textvariable=self.ccode_var)
+        self.ccode_entry.place(x=440, y=80)
+        
+        self.name_var = tk.StringVar()
+        name_label = tk.Label(self, text="Course Name:")
+        name_label.place(x=10, y=80)
+        self.name_entry = tk.Entry(self, width=30, textvariable=self.name_var)
+        self.name_entry.place(x=150, y=80)
+        
+        save_button = tk.Button(self, text="Save", command=self.save_course)
+        save_button.place(x=150, y=110)
+        
+        cancel_button = tk.Button(self, text="Cancel", command=lambda: controller.show_frame(ViewCourses))
+        cancel_button.place(x=230, y=110)
+
+    def search_course(self):
+        course_code = self.code_entry.get().upper().strip()
+        found_course = None
+        for course in courses:
+            if course.course_code == course_code:
+                found_course = course
+                break
+        if found_course:
+            self.name_var.set(found_course.course_name)
+            self.ccode_var.set(found_course.course_code)
+        else:
+            messagebox.showinfo("Error", "Course not found.")
+
+    def save_course(self):
+        course_code = self.code_entry.get().upper().strip()
+        course_name = self.name_entry.get().upper().strip()
+        for course in courses:
+            if course.course_code == course_code:
+                course.course_code = self.ccode_entry.get().upper().strip()
+                course.course_name = course_name
+                save_courses_to_csv(courses)
+                self.controller.frames[ViewCourses].refresh_treeview()
+                messagebox.showinfo("Success", "Course information updated successfully.")
+                self.controller.show_frame(Front)
+                return
+        messagebox.showinfo("Error", "Course not found.")
+
+class ViewCourses(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        
+        label = tk.Label(self, text="Course List", font=("Arial", 18))
+        label.pack(pady=10, padx=10)
+        
+        self.search_var = tk.StringVar()
+        self.search_var.trace("w", self.search_course)  
+        self.search_entry = tk.Entry(self, textvariable=self.search_var)
+        self.search_entry.pack()
+        back_button = tk.Button(self, text="Back",command=lambda: controller.show_frame(Front))
+        back_button.pack()
+        self.tree = ttk.Treeview(self, columns=('Course Code', 'Course Name'), show='headings')
+        self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        self.tree.heading('Course Code', text='Course Code')
+        self.tree.heading('Course Name', text='Course Name')
+        self.tree.column('Course Code', width=100)  
+        self.tree.column('Course Name', width=200)  
+        
+        scrollbar = ttk.Scrollbar(self, orient='vertical', command=self.tree.yview)
+        scrollbar.pack(side=tk.RIGHT, fill='y')
+        self.tree.configure(yscroll=scrollbar.set)
+
+        add_co = tk.Button(self, text="Add Course", command=lambda: controller.show_frame(AddCourse))
+        add_co.pack(side=tk.LEFT, padx=5)
+        delete_co = tk.Button(self, text="Delete Course", command=lambda: controller.show_frame(DeleteCourse))
+        delete_co.pack(side=tk.LEFT, padx=5)
+        add_st = tk.Button(self, text="Edit Course", command=lambda: controller.show_frame(EditCourse))
+        add_st.pack(side=tk.LEFT, padx=5)
+
+        self.populate_treeview()
+
+    def search_course(self, *args):
+        search_query = self.search_var.get().lower()
+        if search_query:
+            self.tree.delete(*self.tree.get_children())
+            for course in courses:
+                course_data = [course.course_code, course.course_name]
+                if any(search_query in str(data).lower() for data in course_data):
+                    self.tree.insert('', tk.END, values=course_data)
+        else:
+            self.refresh_treeview()
+
+    def populate_treeview(self):
+        for course in courses:
+            self.tree.insert('', tk.END, values=(course.course_code, course.course_name))
+
+    def refresh_treeview(self):
+        self.tree.delete(*self.tree.get_children())
+        self.populate_treeview()
+
+class SampleApp(tk.Tk):
+    def __init__(self, *args, **kwargs):
+        tk.Tk.__init__(self, *args, **kwargs)
+        
+        container = tk.Frame(self)
+        container.pack(side="top", fill="both", expand=True)
+        container.grid_rowconfigure(0, weight=1)
+        container.grid_columnconfigure(0, weight=1)
+        
+        self.frames = {}
+
+        global students
+        global courses
+        students = load_students_from_csv()
+        courses = load_courses_from_csv()
+        
+        for F in (Front, AddStudent, DeleteStudent, AddCourse, DeleteCourse, ViewStudents, EditStudent, EditCourse, ViewCourses):
+            frame = F(container, self)
+            self.frames[F] = frame
+            frame.grid(row=0, column=0, sticky="nsew")
+        
+        self.show_frame(Front)
+    
+    def show_frame(self, cont):
+        frame = self.frames[cont]
+        frame.tkraise()
 
 
-    def edit_course(self):
-        selected_item = self.course_tree.selection()
-        if not selected_item:
-            messagebox.showerror("Error", "Please select a course to edit.")
-            return
-
-        course_data = self.course_tree.item(selected_item)['values']
-
-        dialog = UpdateCourseDialog(self.root, course_data)
-        self.root.wait_window(dialog.top)  
-        self.load_courses() 
-
-
-
-
-
-root = tk.Tk()
-app = Front(root, db_manager)
-root.mainloop()
+if __name__ == "__main__":
+    app = SampleApp()
+    app.state('zoomed')
+    app.title("Page Navigation Example")
+    app.mainloop()
