@@ -113,24 +113,28 @@ def add_student(students, courses, id_number, first_name, middle_name, last_name
 
     save_students_to_csv(students)
     save_courses_to_csv(courses)
+    messagebox.showinfo("Success", "Student added successfully.")
 
 def delete_student(students, id_to_delete):
     for student in students:
         if student.id == id_to_delete:
             students.remove(student)
             save_students_to_csv(students) 
-            messagebox.showinfo("Success", "Student deleted successfully.")
-            return
-    messagebox.showerror("Error", "Student not found.")
+            return True  
+    return False  
 
 def delete_course(students, courses, course_code):
+    course_exists = False 
     for course in courses:
         if course.course_code.lower() == course_code.lower():
             courses.remove(course)
+            course_exists = True
             break
-    else:
+    
+    if not course_exists:
         messagebox.showerror("Error", "Course not found.")
-        return
+        return False  
+
 
     for student in students:
         if student.course_code.lower() == course_code.lower():
@@ -138,8 +142,8 @@ def delete_course(students, courses, course_code):
 
     save_students_to_csv(students)
     save_courses_to_csv(courses)
+    return True  
 
-    messagebox.showinfo("Success", "Course deleted successfully.")
 
 def sort_students_by_id(students):
     return sorted(students, key=lambda student: student.id)
@@ -152,145 +156,10 @@ class Front(tk.Frame):
         label = tk.Label(self, text="What would you like to do?", font=("Arial", 18))
         label.pack(pady=10, padx=10)
         
-        view_list = tk.Button(self, text="View Students", command=lambda: controller.show_frame(ViewStudents))
-        view_list.pack()
-        add_st = tk.Button(self, text="View Courses", command=lambda: controller.show_frame(ViewCourses))
-        add_st.pack()
-
-class AddStudent(tk.Frame):
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        self.controller = controller
-        
-        label = tk.Label(self, text="Please fill out the information", font=("Arial", 18))
-        label.pack(pady=10, padx=10)
-        id_label = tk.Label(self, text="ID Number: ")
-        id_label.place(x=10, y=50)
-        self.id_entry = tk.Entry(self, width=30)
-        self.id_entry.place(x=10,y=80)
-        first_name_label = tk.Label(self, text="First Name: ")
-        first_name_label.place(x=10, y=110)
-        self.first_name_entry = tk.Entry(self, width=25)
-        self.first_name_entry.place(x=80,y=110)
-        middle_name_label = tk.Label(self, text="Middle Name: ")
-        middle_name_label.place(x=210, y=110)
-        self.middle_name_entry = tk.Entry(self, width=15)
-        self.middle_name_entry.place(x=300,y=110)
-        last_name_label = tk.Label(self, text="Last Name: ")
-        last_name_label.place(x=410, y=110)
-        self.last_name_entry = tk.Entry(self, width=15)
-        self.last_name_entry.place(x=480,y=110)
-        lvl_label = tk.Label(self, text="Year Level: ")
-        lvl_label.place(x=10, y=140)
-        self.lvl_entry = tk.Entry(self, width=5)
-        self.lvl_entry.place(x=10, y=170)
-        self.gender_var = tk.StringVar()
-        self.gender_var.set("Male")
-        male_radio = tk.Radiobutton(self, text="Male", variable=self.gender_var, value="M")
-        male_radio.place(x=210, y=140)
-        female_radio = tk.Radiobutton(self, text="Female", variable=self.gender_var, value="F")
-        female_radio.place(x=210, y=170)
-        id_label = tk.Label(self, text="Course Code: ")
-        id_label.place(x=10, y=210)
-        self.course_entry = tk.Entry(self, width=30)
-        self.course_entry.place(x=10, y=230)
-        
-        add_button = tk.Button(self, text="Add", command=self.add_student)
-        add_button.place(x=400, y=230)
-        back_button = tk.Button(self, text="Back",command=lambda: controller.show_frame(ViewStudents))
-        back_button.place(x=400, y=260)
-        
-    def add_student(self):
-        id_number = self.id_entry.get()
-        first_name = self.first_name_entry.get().upper().strip()
-        middle_name = self.middle_name_entry.get().upper().strip()
-        last_name = self.last_name_entry.get().upper().strip()
-        lvl = self.lvl_entry.get()
-        gender = self.gender_var.get()
-        course_code = self.course_entry.get().upper().strip()
-        
-        add_student(students, courses, id_number, first_name, middle_name, last_name, lvl, gender, course_code)
-        self.controller.frames[ViewStudents].refresh_treeview()
-
-    
-
-class DeleteStudent(tk.Frame):
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        self.controller = controller
-
-        label = tk.Label(self, text="Please fill out the information", font=("Arial", 18))
-        label.pack(pady=10, padx=10)
-        id_label = tk.Label(self, text="ID Number:")
-        id_label.place(x=10, y=50)
-        self.id_entry = tk.Entry(self, width=30)
-        self.id_entry.place(x=10, y=80)
-        
-        delete_button = tk.Button(self, text="Delete", command=self.confirm_delete_student)
-        delete_button.place(x=75, y=110)
-        back_button = tk.Button(self, text="Back",command=lambda: controller.show_frame(ViewStudents))
-        back_button.place(x=180, y=260)
-
-    def confirm_delete_student(self):
-        id_to_delete = self.id_entry.get()
-        confirmation = messagebox.askyesno("Confirmation", f"Are you sure you want to delete student with ID {id_to_delete}?")
-        if confirmation:
-            delete_student(students, id_to_delete)
-            self.controller.frames[ViewStudents].refresh_treeview()
-
-class AddCourse(tk.Frame):
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        self.controller = controller
-        
-        label = tk.Label(self, text="Please fill out the information", font=("Arial", 18))
-        label.pack(pady=10, padx=10)
-        label = tk.Label(self, text="Course Code:")
-        label.place(x=10, y=50)
-        self.code_entry = tk.Entry(self, width=30)
-        self.code_entry.place(x=110, y=50)
-        label = tk.Label(self, text="Course Name:")
-        label.place(x=10, y=80)
-        self.course_entry = tk.Entry(self, width=30)
-        self.course_entry.place(x=110, y=80)
-        
-        add_button = tk.Button(self, text="Add", command=self.add_course)
-        add_button.place(x=110, y=110)
-        back_button = tk.Button(self, text="Back",command=lambda: controller.show_frame(ViewCourses))
-        back_button.place(x=180, y=260)
-
-    def add_course(self):
-        course_code = self.code_entry.get().upper().strip()
-        if any(course.course_code == course_code for course in courses):
-            messagebox.showerror("Error", "Course with this Course Code already exists.")
-            return
-        course_name = self.course_entry.get().upper().strip()
-        courses.append(Course(course_code, course_name))
-        save_courses_to_csv(courses)
-        self.controller.frames[ViewStudents].refresh_treeview()
-
-class DeleteCourse(tk.Frame):
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        self.controller = controller
-        label = tk.Label(self, text="Please fill out the information", font=("Arial", 18))
-        label.pack(pady=10, padx=10)
-        label = tk.Label(self, text="Course Code:")
-        label.place(x=10, y=50)
-        self.code_entry = tk.Entry(self, width=30)
-        self.code_entry.place(x=110, y=50)
-        back_button = tk.Button(self, text="Back",command=lambda: controller.show_frame(ViewCourses))
-        back_button.place(x=180, y=260)
-        
-        delete_button = tk.Button(self, text="Delete", command=self.confirm_delete_course)
-        delete_button.place(x=110, y=80)
-
-    def confirm_delete_course(self):
-        course_code = self.code_entry.get().upper().strip()
-        confirmation = messagebox.askyesno("Confirmation", f"Are you sure you want to delete course with code {course_code}?")
-        if confirmation:
-            delete_course(students, courses, course_code)
-            self.controller.frames[ViewStudents].refresh_treeview()
+        view_students = tk.Button(self, text="View Students", command=lambda: controller.show_frame(ViewStudents))
+        view_students.pack()
+        view_courses = tk.Button(self, text="View Courses", command=lambda: controller.show_frame(ViewCourses))
+        view_courses.pack()
 
 class ViewStudents(tk.Frame):
     def __init__(self, parent, controller):
@@ -304,11 +173,11 @@ class ViewStudents(tk.Frame):
         self.search_entry.pack()
         back_button = tk.Button(self, text="Back",command=lambda: controller.show_frame(Front))
         back_button.pack()
-        add_st = tk.Button(self, text="Edit Student", command=lambda: controller.show_frame(EditStudent))
+        add_st = tk.Button(self, text="Edit Student", command=self.edit_student)
         add_st.pack(side=tk.RIGHT, padx=5)
-        delete_st = tk.Button(self, text="Delete Student", command=lambda: controller.show_frame(DeleteStudent))
+        delete_st = tk.Button(self, text="Delete Student", command=self.delete_student)
         delete_st.pack(side=tk.RIGHT, padx=5, pady=10)
-        add_st = tk.Button(self, text="Add Student", command=lambda: controller.show_frame(AddStudent))
+        add_st = tk.Button(self, text="Add Student", command=self.add_student)
         add_st.pack(side=tk.RIGHT, padx=5)
         self.tree = ttk.Treeview(self, columns=('ID', 'First Name', 'Middle Name', 'Last Name', 'Level', 'Gender', 'Course Code'), show='headings')
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
@@ -348,167 +217,164 @@ class ViewStudents(tk.Frame):
         else:
             self.refresh_treeview()
     
-            
-class EditStudent(tk.Frame):
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        self.controller = controller
-        label = tk.Label(self, text="Edit Student Information", font=("Arial", 18))
-        label.pack(pady=10, padx=10)
-        id_label = tk.Label(self, text="Enter ID Number:")
-        id_label.place(x=10, y=50)
-        self.id_entry = tk.Entry(self, width=30)
-        self.id_entry.place(x=150, y=50)
-        search_button = tk.Button(self, text="Search", command=self.search_student)
-        search_button.place(x=310, y=50)
-        self.first_name_var = tk.StringVar()
-        self.middle_name_var = tk.StringVar()
-        self.last_name_var = tk.StringVar()
-        self.lvl_var = tk.StringVar()
-        self.gender_var = tk.StringVar()
-        self.course_var = tk.StringVar()
-        first_name_label = tk.Label(self, text="First Name:")
-        first_name_label.place(x=10, y=110)
-        self.first_name_entry = tk.Entry(self, width=25, textvariable=self.first_name_var)
-        self.first_name_entry.place(x=80,y=110)
-        middle_name_label = tk.Label(self, text="Middle Name:")
-        middle_name_label.place(x=210, y=110)
-        self.middle_name_entry = tk.Entry(self, width=15, textvariable=self.middle_name_var)
-        self.middle_name_entry.place(x=300,y=110)
-        last_name_label = tk.Label(self, text="Last Name:")
-        last_name_label.place(x=410, y=110)
-        self.last_name_entry = tk.Entry(self, width=15, textvariable=self.last_name_var)
-        self.last_name_entry.place(x=500, y=110)
-        lvl_label = tk.Label(self, text="Year Level:")
-        lvl_label.place(x=10, y=140)
-        self.lvl_entry = tk.Entry(self, width=5, textvariable=self.lvl_var)
-        self.lvl_entry.place(x=80, y=140)
-        gender_label = tk.Label(self, text="Gender:")
-        gender_label.place(x=10, y=170)
-        self.gender_combo = ttk.Combobox(self, width=27, textvariable=self.gender_var, state="readonly")
-        self.gender_combo['values'] = ('M', 'F')
-        self.gender_combo.place(x=80, y=170)
-        course_label = tk.Label(self, text="Course Code:")
-        course_label.place(x=10, y=200)
-        self.course_entry = tk.Entry(self, width=30, textvariable=self.course_var)
-        self.course_entry.place(x=10, y=230)
-        save_button = tk.Button(self, text="Save", command=self.save_student)
-        save_button.place(x=400, y=230)
-        cancel_button = tk.Button(self, text="Cancel", command=lambda: controller.show_frame(ViewStudents))
-        cancel_button.place(x=400, y=260)
+    def add_student(self):
+        add_window = tk.Toplevel(self)
+        add_window.title("Add Student")
 
-    def search_student(self):
-        student_id = self.id_entry.get().upper().strip()
-        found_student = None
+        tk.Label(add_window, text="Add Student", font=("Arial", 18)).pack(pady=10, padx=10)
+
+        tk.Label(add_window, text="ID Number:").pack()
+        id_entry = tk.Entry(add_window, width=30)
+        id_entry.pack()
+
+        tk.Label(add_window, text="First Name:").pack()
+        first_name_entry = tk.Entry(add_window, width=30)
+        first_name_entry.pack()
+
+
+        tk.Label(add_window, text="Middle Name:").pack()
+        middle_name_entry = tk.Entry(add_window, width=30)
+        middle_name_entry.pack()
+
+        tk.Label(add_window, text="Last Name:").pack()
+        last_name_entry = tk.Entry(add_window, width=30)
+        last_name_entry.pack()
+
+        tk.Label(add_window, text="Gender:").pack()
+        gender_var = tk.StringVar(add_window)
+        gender_var.set("M") 
+        gender_dropdown = tk.OptionMenu(add_window, gender_var, "M", "F")
+        gender_dropdown.pack()
+
+        tk.Label(add_window, text="Year Level:").pack()
+        lvl_var = tk.StringVar(add_window)
+        lvl_var.set("1") 
+        lvl_dropdown = tk.OptionMenu(add_window, lvl_var, "1", "2", "3", "4", "5", "6")
+        lvl_dropdown.pack()
+
+        tk.Label(add_window, text="Course Code:").pack()
+        course_entry = tk.Entry(add_window, width=30)
+        course_entry.pack()
+
+        def save_student():
+            student_id = id_entry.get().strip().upper()
+            first_name = first_name_entry.get().strip().upper()
+            middle_name = middle_name_entry.get().strip().upper()
+            last_name = last_name_entry.get().strip().upper()
+            gender = gender_var.get().strip().upper()
+            lvl = lvl_var.get().strip()
+            course_code = course_entry.get().strip().upper()
+
+            if not (student_id and first_name and last_name and gender and lvl and course_code):
+                messagebox.showerror("Error", "Please fill in all fields.")
+                return
+            add_student(students, courses, student_id, first_name, middle_name, last_name, lvl, gender, course_code)
+            self.refresh_treeview()
+            add_window.destroy()
+
+        save_button = tk.Button(add_window, text="Save Student", command=save_student)
+        save_button.pack(pady=10)
+
+
+        
+    def delete_student(self):
+        selected_item = self.tree.selection()
+        if not selected_item:
+            messagebox.showerror("Error", "Please select a student to delete.")
+            return
+
+        confirm = messagebox.askyesno("Confirm Deletion", "Are you sure you want to delete this student?")
+        if confirm:
+            student_id = self.tree.item(selected_item)['values'][0] 
+            success = delete_student(students, student_id) 
+            if success:
+                self.refresh_treeview()
+                messagebox.showinfo("Success", "Student deleted successfully.")
+            else:
+                messagebox.showerror("Error", "Student not found.")
+
+    def edit_student(self):
+        selected_item = self.tree.selection()
+        if not selected_item:
+            messagebox.showerror("Error", "Please select a student to edit.")
+            return
+
+        student_id = self.tree.item(selected_item)['values'][0]
+
         for student in students:
             if student.id == student_id:
-                found_student = student
-                break
-        if found_student:
-            self.first_name_var.set(found_student.first_name)
-            self.middle_name_var.set(found_student.middle_name)
-            self.last_name_var.set(found_student.last_name)
-            self.lvl_var.set(found_student.lvl)
-            self.gender_var.set(found_student.gender)
-            self.course_var.set(found_student.course_code)
-        else:
-            messagebox.showinfo("Error", "Student not found.")
-    
-    def course_exists(self, course_code: str) -> bool:
-        with open('courses.csv', 'r') as file:
-            reader = csv.DictReader(file)
+                edit_window = tk.Toplevel(self)
+                edit_window.title("Edit Student")
 
-            for course in reader:
-                if course['course_code'] == course_code:
-                    return True
-            
-            return False
-    
-    def save_student(self):
-        student_id = self.id_entry.get()
-        first_name = self.first_name_entry.get().upper().strip()
-        middle_name = self.middle_name_entry.get().upper().strip()
-        last_name = self.last_name_entry.get().upper().strip()
-        lvl = self.lvl_entry.get()
-        gender = self.gender_var.get().upper().strip()
-        course_code = self.course_entry.get().upper().strip()
-        for student in students:
-            if self.course_exists(course_code):
-                if student.id == student_id:
-                    student.first_name = first_name
-                    student.middle_name = middle_name
-                    student.last_name = last_name
-                    student.lvl = lvl
-                    student.gender = gender
-                    student.course_code = course_code
+                tk.Label(edit_window, text="Edit Student", font=("Arial", 18)).pack(pady=10, padx=10)
+
+                tk.Label(edit_window, text="ID Number:").pack()
+                id_entry = tk.Entry(edit_window, width=30)
+                id_entry.insert(0, student.id) 
+                id_entry.pack()
+
+                tk.Label(edit_window, text="First Name:").pack()
+                first_name_entry = tk.Entry(edit_window, width=30)
+                first_name_entry.insert(0, student.first_name) 
+                first_name_entry.pack()
+
+                tk.Label(edit_window, text="Middle Name:").pack()
+                middle_name_entry = tk.Entry(edit_window, width=30)
+                middle_name_entry.insert(0, student.middle_name)
+                middle_name_entry.pack()
+
+                tk.Label(edit_window, text="Last Name:").pack()
+                last_name_entry = tk.Entry(edit_window, width=30)
+                last_name_entry.insert(0, student.last_name)
+                last_name_entry.pack()
+
+                tk.Label(edit_window, text="Year Level:").pack()
+                lvl_var = tk.StringVar(edit_window)
+                lvl_var.set(student.lvl) 
+                lvl_dropdown = tk.OptionMenu(edit_window, lvl_var, "1", "2", "3", "4", "5", "6")
+                lvl_dropdown.pack()
+
+                tk.Label(edit_window, text="Gender:").pack()
+                gender_var = tk.StringVar(edit_window)
+                gender_var.set(student.gender) 
+                gender_dropdown = tk.OptionMenu(edit_window, gender_var, "M", "F")
+                gender_dropdown.pack()
+
+                tk.Label(edit_window, text="Course Code:").pack()
+                course_entry = tk.Entry(edit_window, width=30)
+                course_entry.insert(0, student.course_code) 
+                course_entry.pack()
+
+                def save_changes():
+                    new_id = id_entry.get().strip().upper()
+                    new_first_name = first_name_entry.get().strip().upper()
+                    new_middle_name = middle_name_entry.get().strip().upper()
+                    new_last_name = last_name_entry.get().strip().upper()
+                    new_lvl = lvl_var.get().strip()
+                    new_gender = gender_var.get().strip().upper()
+                    new_course_code = course_entry.get().strip().upper()
+
+                    if new_id != student.id and any(s.id == new_id for s in students):
+                        messagebox.showerror("Error", "Student with this ID already exists.")
+                        return
+
+                    student.id = new_id
+                    student.first_name = new_first_name
+                    student.middle_name = new_middle_name
+                    student.last_name = new_last_name
+                    student.lvl = new_lvl
+                    student.gender = new_gender
+                    student.course_code = new_course_code
+
                     save_students_to_csv(students)
-                    self.controller.frames[ViewStudents].refresh_treeview()
-                    messagebox.showinfo("Success", "Student information updated successfully.")
-                    self.controller.show_frame(Front)
-                    return
-                return messagebox.showinfo("Error", "Student not found.")
-            return messagebox.showinfo("Error", "Course Code not found.")
+                    self.refresh_treeview()  
+                    messagebox.showinfo("Success", "Changes saved successfully.")
+                    edit_window.destroy()  
 
-class EditCourse(tk.Frame):
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        self.controller = controller
-        
-        label = tk.Label(self, text="Edit Course Information", font=("Arial", 18))
-        label.pack(pady=10, padx=10)
-        
-        code_label = tk.Label(self, text="Enter Course Code:")
-        code_label.place(x=10, y=50)
-        self.code_entry = tk.Entry(self, width=30)
-        self.code_entry.place(x=150, y=50)
-        
-        search_button = tk.Button(self, text="Search", command=self.search_course)
-        search_button.place(x=300, y=50)
-
-        self.ccode_var = tk.StringVar()
-        ccode_label = tk.Label(self, text="Course Name:")
-        ccode_label.place(x=400, y=80)
-        self.ccode_entry = tk.Entry(self, width=30, textvariable=self.ccode_var)
-        self.ccode_entry.place(x=440, y=80)
-        
-        self.name_var = tk.StringVar()
-        name_label = tk.Label(self, text="Course Name:")
-        name_label.place(x=10, y=80)
-        self.name_entry = tk.Entry(self, width=30, textvariable=self.name_var)
-        self.name_entry.place(x=150, y=80)
-        
-        save_button = tk.Button(self, text="Save", command=self.save_course)
-        save_button.place(x=150, y=110)
-        
-        cancel_button = tk.Button(self, text="Cancel", command=lambda: controller.show_frame(ViewCourses))
-        cancel_button.place(x=230, y=110)
-
-    def search_course(self):
-        course_code = self.code_entry.get().upper().strip()
-        found_course = None
-        for course in courses:
-            if course.course_code == course_code:
-                found_course = course
-                break
-        if found_course:
-            self.name_var.set(found_course.course_name)
-            self.ccode_var.set(found_course.course_code)
-        else:
-            messagebox.showinfo("Error", "Course not found.")
-
-    def save_course(self):
-        course_code = self.code_entry.get().upper().strip()
-        course_name = self.name_entry.get().upper().strip()
-        for course in courses:
-            if course.course_code == course_code:
-                course.course_code = self.ccode_entry.get().upper().strip()
-                course.course_name = course_name
-                save_courses_to_csv(courses)
-                self.controller.frames[ViewCourses].refresh_treeview()
-                messagebox.showinfo("Success", "Course information updated successfully.")
-                self.controller.show_frame(Front)
-                return
-        messagebox.showinfo("Error", "Course not found.")
+                save_button = tk.Button(edit_window, text="Save Changes", command=save_changes)
+                save_button.pack(pady=10)
+                break  
+                
 
 class ViewCourses(tk.Frame):
     def __init__(self, parent, controller):
@@ -535,11 +401,11 @@ class ViewCourses(tk.Frame):
         scrollbar.pack(side=tk.RIGHT, fill='y')
         self.tree.configure(yscroll=scrollbar.set)
 
-        add_co = tk.Button(self, text="Add Course", command=lambda: controller.show_frame(AddCourse))
+        add_co = tk.Button(self, text="Add Course", command=self.add_course)
         add_co.pack(side=tk.LEFT, padx=5)
-        delete_co = tk.Button(self, text="Delete Course", command=lambda: controller.show_frame(DeleteCourse))
+        delete_co = tk.Button(self, text="Delete Course", command=self.delete_course)
         delete_co.pack(side=tk.LEFT, padx=5)
-        add_st = tk.Button(self, text="Edit Course", command=lambda: controller.show_frame(EditCourse))
+        add_st = tk.Button(self, text="Edit Course", command=self.edit_course)
         add_st.pack(side=tk.LEFT, padx=5)
 
         self.populate_treeview()
@@ -562,6 +428,102 @@ class ViewCourses(tk.Frame):
     def refresh_treeview(self):
         self.tree.delete(*self.tree.get_children())
         self.populate_treeview()
+    
+    def add_course(self):
+        add_window = tk.Toplevel(self)
+        add_window.title("Add Course")
+
+        tk.Label(add_window, text="Add Course", font=("Arial", 18)).pack(pady=10, padx=10)
+
+        tk.Label(add_window, text="Course Code:").pack()
+        code_entry = tk.Entry(add_window, width=30)
+        code_entry.pack()
+
+        tk.Label(add_window, text="Course Name:").pack()
+        name_entry = tk.Entry(add_window, width=30)
+        name_entry.pack()
+
+        def save_course():
+            course_code = code_entry.get().strip().upper()
+            course_name = name_entry.get().strip().upper()
+
+            if any(course.course_code == course_code for course in courses):
+                messagebox.showerror("Error", "Course with this Course Code already exists.")
+                return
+
+            courses.append(Course(course_code, course_name))
+            save_courses_to_csv(courses)
+            self.refresh_treeview() 
+            messagebox.showinfo("Success", "Course added successfully.")
+            add_window.destroy()
+
+        save_button = tk.Button(add_window, text="Save", command=save_course)
+        save_button.pack(pady=10)
+
+    def delete_course(self):
+        selected_item = self.tree.selection()
+        if not selected_item:
+            messagebox.showerror("Error", "Please select a course to delete.")
+            return
+
+        confirm = messagebox.askyesno("Confirm Deletion", "Are you sure you want to delete this course?")
+        if confirm:
+            course_code = self.tree.item(selected_item)['values'][0] 
+            success = delete_course(students, courses, course_code)  
+            if success:
+                self.refresh_treeview()  
+                messagebox.showinfo("Success", "Course deleted successfully.")
+            else:
+                messagebox.showerror("Error", "Course not found.")
+
+    def edit_course(self):
+        selected_item = self.tree.selection()
+        if not selected_item:
+            messagebox.showerror("Error", "Please select a course to edit.")
+            return
+
+        old_course_code = self.tree.item(selected_item)['values'][0] 
+        old_course_name = self.tree.item(selected_item)['values'][1]
+        edit_window = tk.Toplevel(self)
+        edit_window.title("Edit Course")
+
+        tk.Label(edit_window, text="Edit Course", font=("Arial", 18)).pack(pady=10, padx=10)
+
+        tk.Label(edit_window, text="Course Code:").pack()
+        code_entry = tk.Entry(edit_window, width=30)
+        code_entry.insert(tk.END, old_course_code) 
+        code_entry.pack()
+
+        tk.Label(edit_window, text="Course Name:").pack()
+        name_entry = tk.Entry(edit_window, width=30)
+        name_entry.insert(tk.END, old_course_name)
+        name_entry.pack()
+
+        def save_changes():
+            new_course_code = code_entry.get().strip().upper()
+            new_course_name = name_entry.get().strip().upper()
+
+            for course in courses:
+                if course.course_code == old_course_code:
+                    course.course_code = new_course_code
+                    course.course_name = new_course_name
+
+                    for student in students:
+                        if student.course_code == old_course_code:
+                            student.course_code = new_course_code
+
+                    save_courses_to_csv(courses)
+                    save_students_to_csv(students)
+                    self.refresh_treeview() 
+                    messagebox.showinfo("Success", "Course information updated successfully.")
+                    edit_window.destroy() 
+                    return
+
+            messagebox.showinfo("Error", "Course not found.")
+
+        save_button = tk.Button(edit_window, text="Save", command=save_changes)
+        save_button.pack(pady=10)
+
 
 class SampleApp(tk.Tk):
     def __init__(self, *args, **kwargs):
@@ -579,7 +541,7 @@ class SampleApp(tk.Tk):
         students = load_students_from_csv()
         courses = load_courses_from_csv()
         
-        for F in (Front, AddStudent, DeleteStudent, AddCourse, DeleteCourse, ViewStudents, EditStudent, EditCourse, ViewCourses):
+        for F in (Front, ViewStudents, ViewCourses):
             frame = F(container, self)
             self.frames[F] = frame
             frame.grid(row=0, column=0, sticky="nsew")
