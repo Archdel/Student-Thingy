@@ -1,101 +1,101 @@
-id,name,lvl,gender,course_code
-2022-0154,Emmanuel Fitz Concha Ciano,2,M,BSCS
-2022-0910,Adrien Josh Benolirao Lopez,2,M,BSIT
-2022-0010,Bob The Builder,2,M,BSBIO-ANBIO
-2023-0654,John Doe,1,M,BSCS
-2022-0421,Emily Smith,2,F,BSIS
-2021-0123,Michael Johnson,3,M,BSENE
-2020-0111,Olivia Brown,4,F,BSN
-2019-0109,William Jones,5,M,BSCE
-2018-0135,Emma Garcia,6,F,BSCE
-2023-0451,James Martinez,1,M,BSCE
-2022-0146,Isabella Rodriguez,2,F,BSEM
-2021-0134,Alexander Wilson,3,M,BSN
-2020-0392,Sophia Lopez,4,F,BSIS
-2019-0646,Daniel Hernandez,5,M,BSCE
-2018-0364,Mia Gonzalez,6,F,BSIS
-2023-0147,Matthew Perez,1,M,BSIAM
-2022-0374,Charlotte Sanchez,2,F,BSBA-MM
-2021-0145,Ethan Torres,3,M,BSEE
-2020-0354,Amelia Rivera,4,F,BSCE
-2019-0122,Samantha Moore,5,F,BSENE
-2018-0137,Andrew Lewis,6,M,BSCE
-2023-0141,Grace Martin,1,F,BSCE
-2022-0372,David Clark,2,M,BSCE
-2021-0103,Ava King,3,F,BSIS
-2020-0361,Logan Wright,4,M,BSME
-2019-0128,Avery Hill,5,F,BSCE
-2018-0136,Ella Baker,6,F,BSN
-2023-0403,Lucas Green,1,M,BSCE
-2022-0117,Riley Adams,2,F,BSCE
-2021-0674,Lily Nelson,3,F,BSCS
-2020-0661,Benjamin Hill,4,M,BSCS
-2019-0665,Chloe Ramirez,5,F,BSCE
-2018-0132,Jack Scott,6,M,BSCE
-2023-0100,Luna Evans,1,F,BSN
-2022-0112,Leo Murphy,2,M,BSCE
-2021-0126,Layla Rivera,3,F,BSCE
-2020-0403,Maxwell Carter,4,M,BSCE
-2019-0401,Audrey Cooper,5,F,BSCE
-2018-0129,Liam Reed,6,M,BSIS
-2023-0663,Nova Coleman,1,F,BSN
-2022-0101,Elijah Hill,2,M,BSCE
-2021-0143,Hannah Ward,3,F,BSCS
-2020-0149,William Martinez,4,M,BSCS
-2019-0413,Zoe Henderson,5,F,BSCE
-2018-0144,Madison Ross,6,F,BSCE
-2023-0660,Evan Butler,1,M,BSN
-2022-0142,Aubrey Barnes,2,F,BSIS
-2021-0138,Julian Fisher,3,M,BSCE
-2020-0658,Ellie Hughes,4,F,BSCE
-2019-0653,Harper Long,5,F,BSCS
-2018-0651,Isaac Stewart,6,M,BSCE
-2023-0115,Leah Mitchell,1,F,BSCE
-2022-0118,Brooklyn Bell,2,F,BSN
-2019-0105,Sophie Baker,5,F,BSCE
-2018-0148,Nathan Ward,6,M,BSME
-2023-0670,Stella Fisher,1,F,BSCE
-2022-0659,Anthony Ramirez,2,M,BSCS
-2021-0664,Penelope Hill,3,F,BSN
-2020-0147,Josephine Perry,4,F,BSIS
-2019-0143,Christopher Cooper,5,M,BSCE
-2018-0157,Violet Gonzalez,6,F,BSCE
-2023-0102,Gabriel Murphy,1,M,BSME
-2022-0119,Autumn Butler,2,F,BSCE
-2021-0127,Adam Hughes,3,M,BSN
-2020-0125,Naomi Wood,4,F,BSCE
-2019-0114,Samuel Long,5,M,BSCS
-2018-0122,Eva Scott,6,F,BSCE
-2023-0129,Julius Nelson,1,M,BSCE
-2022-0120,Hazel Barnes,2,F,BSN
-2021-0132,Thomas Stewart,3,M,BSCE
-2020-0111,Aurora Ward,4,F,BSIS
-2019-0136,Charles Johnson,5,M,BSCE
-2018-0127,Scarlett Murphy,6,F,BSCE
-2023-0124,Christian Hughes,1,M,BSCE
-2022-0148,Eliza Baker,2,F,BSIS
-2021-0137,Landon Hill,3,M,BSCE
-2020-0133,Elizabeth Perry,4,F,BSCE
-2019-0130,Jonathan Butler,5,M,BSCE
-2018-0128,Eleanor Wood,6,F,BSCE
-2023-0121,Madeline Barnes,1,F,BSCE
-2022-0123,David Ward,2,M,BSCE
-2021-0141,Ruby Johnson,3,F,BSCE
-2020-0119,Matthew Scott,4,M,BSME
-2019-0116,Amelia Murphy,5,F,BSCE
-2018-0135,Luke Nelson,6,M,BSCE
-2023-0104,Natalie Baker,1,F,BSN
-2022-0108,Dylan Hughes,2,M,BSCE
-2021-0131,Julia Perry,3,F,BSCE
-2020-0134,Joshua Johnson,4,M,BSCE
-2019-0129,Charlotte Murphy,5,F,BSCE
-2018-0141,Andrew Wood,6,M,BSIS
-2023-0112,Anna Barnes,1,F,BSCE
-2022-0115,Elijah Ward,2,M,BSN
-2021-0124,Oliver Johnson,3,M,BSCE
-2020-0137,Sofia Scott,4,F,BSCE
-2019-0131,Matthew Nelson,5,M,BSCE
-2018-0123,Emma Baker,6,F,BSCE
-2023-0113,Grace Butler,1,F,BSCE
-2022-0114,Liam Hughes,2,M,BSCE
-2021-0126,Harper Ward,3,F,BSCE
+id,first_name,middle_name,last_name,lvl,gender,course_code
+2022-0910,Adrien Josh, Benolirao, Lopez,2,M,BSIT
+2023-0654,JOHN,MICHAEL,DOE,1,M,BSCS
+2022-0421, Emily, Grace, Smith, 2, F, BSIS
+2021-0123, Michael, James, Johnson, 3, M, BSENE
+2020-0111, Olivia, Marie, Brown, 4, F, BSN
+2019-0109, William, Robert, Jones, 5, M, BSCE
+2018-0135, Emma, Sophia, Garcia, 6, F, BSCE
+2023-0451, James, David, Martinez, 1, M, BSCE
+2022-0146, Isabella, Rose, Rodriguez, 2, F, BSEM
+2021-0134, Alexander, John, Wilson, 3, M, BSN
+2020-0392, Sophia, Emily, Lopez, 4, F, BSIS
+2019-0646, Daniel, Christopher, Hernandez, 5, M, BSCE
+2018-0364, Mia, Isabella, Gonzalez, 6, F, BSIS
+2023-0147, Matthew, Joseph, Perez, 1, M, BSIAM
+2022-0374, Charlotte, Ann, Sanchez, 2, F, BSBA-MM
+2021-0145, Ethan, Thomas, Torres, 3, M, BSEE
+2020-0354, Amelia, Grace, Rivera, 4, F, BSCE
+2019-0122, Samantha, Marie, Moore, 5, F, BSENE
+2018-0137, Andrew, Charles, Lewis, 6, M, BSCE
+2023-0141, Grace, Elizabeth, Martin, 1, F, BSCE
+2022-0372, David, Anthony, Clark, 2, M, BSCE
+2021-0103, Ava, Nicole, King, 3, F, BSIS
+2020-0361, Logan, William, Wright, 4, M, BSME
+2019-0128, Avery, Olivia, Hill, 5, F, BSCE
+2018-0136, Ella, Rose, Baker, 6, F, BSN
+2023-0403, Lucas, Henry, Green, 1, M, BSCE
+2022-0117, Riley, Sophia, Adams, 2, F, BSCE
+2021-0674, Lily, Grace, Nelson, 3, F, BSCS
+2020-0661, Benjamin, David, Hill, 4, M, BSCS
+2019-0665, Chloe, Marie, Ramirez, 5, F, BSCE
+2018-0132, Jack, Alexander, Scott, 6, M, BSCE
+2023-0100, Luna, Marie, Evans, 1, F, BSN
+2022-0112, Leo, Michael, Murphy, 2, M, BSCE
+2021-0126, Layla, Rose, Rivera, 3, F, BSCE
+2020-0403, Maxwell, James, Carter, 4, M, BSCE
+2019-0401, Audrey, Elizabeth, Cooper, 5, F, BSCE
+2018-0129, Liam, Matthew, Reed, 6, M, BSIS
+2023-0663, Nova, Grace, Coleman, 1, F, BSN
+2022-0101, Elijah, William, Hill, 2, M, BSCE
+2021-0143, Hannah, Marie, Ward, 3, F, BSCS
+2020-0149, William, James, Martinez, 4, M, BSCS
+2019-0413, Zoe, Ann, Henderson, 5, F, BSCE
+2018-0144, Madison, Rose, Ross, 6, F, BSCE
+2023-0660, Evan, Michael, Butler, 1, M, BSN
+2022-0142, Aubrey, Grace, Barnes, 2, F, BSIS
+2021-0138, Julian, Thomas, Fisher, 3, M, BSCE
+2020-0658, Ellie, Marie, Hughes, 4, F, BSCE
+2019-0653, Harper, Lynn, Long, 5, F, BSCS
+2018-0651, Isaac, Alexander, Stewart, 6, M, BSCE
+2023-0115, Leah, Grace, Mitchell, 1, F, BSCE
+2022-0118, Brooklyn, Marie, Bell, 2, F, BSN
+2019-0105, Sophie, Ann, Baker, 5, F, BSCE
+2018-0148, Nathan, John, Ward, 6, M, BSME
+2023-0670, Stella, Rose, Fisher, 1, F, BSCE
+2022-0659, Anthony, James, Ramirez, 2, M, BSCS
+2021-0664, Penelope, Jane, Hill, 3, F, BSN
+2020-0147, Josephine, Emily, Perry, 4, F, BSIS
+2019-0143, Christopher, Daniel, Cooper, 5, M, BSCE
+2018-0157, Violet, Grace, Gonzalez, 6, F, BSCE
+2023-0102, Gabriel, Michael, Murphy, 1, M, BSME
+2022-0119, Autumn, Marie, Butler, 2, F, BSCE
+2021-0127, Adam, Nicholas, Hughes, 3, M, BSN
+2020-0125, Naomi, Elizabeth, Wood, 4, F, BSCE
+2019-0114, Samuel, Thomas, Long, 5, M, BSCS
+2018-0122,EVA,GRACE,SCOTT,3,F,BSCE
+2023-0129, Julius, Alexander, Nelson, 1, M, BSCE
+2022-0120, Hazel, Marie, Barnes, 2, F, BSN
+2021-0132, Thomas, Michael, Stewart, 3, M, BSCE
+2020-0111, Aurora, Grace, Ward, 4, F, BSIS
+2019-0136, Charles, Edward, Johnson, 5, M, BSCE
+2018-0127, Scarlett, Rose, Murphy, 6, F, BSCE
+2023-0124, Christian, David, Hughes, 1, M, BSCE
+2022-0148, Eliza, Jane, Baker, 2, F, BSIS
+2021-0137, Landon, James, Hill, 3, M, BSCE
+2020-0133, Elizabeth, Marie, Perry, 4, F, BSCE
+2019-0130, Jonathan, Paul, Butler, 5, M, BSCE
+2018-0128, Eleanor, Grace, Wood, 6, F, BSCE
+2023-0121, Madeline, Rose, Barnes, 1, F, BSCE
+2022-0123, David, John, Ward, 2, M, BSCE
+2021-0141, Ruby, Grace, Johnson, 3, F, BSCE
+2020-0119, Matthew, William, Scott, 4, M, BSME
+2019-0116, Amelia, Rose, Murphy, 5, F, BSCE
+2018-0135, Luke, Alexander, Nelson, 6, M, BSCE
+2023-0104, Natalie, Jane, Baker, 1, F, BSN
+2022-0108, Dylan, Michael, Hughes, 2, M, BSCE
+2021-0131, Julia, Marie, Perry, 3, F, BSCE
+2020-0134, Joshua, David, Johnson, 4, M, BSCE
+2019-0129, Charlotte, Ann, Murphy, 5, F, BSCE
+2018-0141, Andrew, James, Wood, 6, M, BSIS
+2023-0112, Anna, Elizabeth, Barnes, 1, F, BSCE
+2022-0115, Elijah, John, Ward, 2, M, BSN
+2021-0124, Oliver, James, Johnson, 3, M, BSCE
+2020-0137, Sofia, Grace, Scott, 4, F, BSCE
+2019-0131, Matthew, Alexander, Nelson, 5, M, BSCE
+2018-0123, Emma, Rose, Baker, 6, F, BSCE
+2023-0113, Grace, Emily, Butler, 1, F, BSCE
+2022-0114, Liam, Thomas, Hughes, 2, M, BSCE
+2021-0126, Harper, Ann, Ward, 3, F, BSCE
+2022-0154,EMMANUEL FITZ,CONCHA,CIANO,2,M,BSCS
+2098-5168,LSDAJF,OIJGFWSOI,SFGIJH,2,F,BSCS
