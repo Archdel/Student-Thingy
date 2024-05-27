@@ -128,7 +128,7 @@ class DatabaseManager:
 db_host = 'localhost'
 db_username = 'root'
 db_password = 'password' 
-db_name = 'mysql'  
+db_name = 'mydb'  
 db_manager = DatabaseManager(db_host, db_username, db_password, db_name)
 db_manager.connect()
 db_manager.add_foreign_key_constraint()
@@ -214,8 +214,8 @@ class CourseManager:
         self.db_manager.execute_query(delete_query, (course_code,))
 
     def update_course(self, course_code, course_name):
-        query = "UPDATE courses SET course_name = %s WHERE course_code = %s"
-        params = (course_name, course_code)
+        query = "UPDATE courses SET course_code = %s, course_name = %s WHERE course_code = %s"
+        params = (course_code, course_name, course_code)
         self.db_manager.execute_query(query, params)
 
     def get_courses(self):
@@ -247,10 +247,12 @@ class AddStudentDialog:
         self.last_name_entry = ttk.Entry(self.top)
         self.last_name_entry.grid(row=3, column=1, padx=5, pady=5)
 
-        self.level_label = ttk.Label(self.top, text="Level:")
+        self.level_label = ttk.Label(self.top, text="Year Level:")
         self.level_label.grid(row=4, column=0, padx=5, pady=5)
-        self.level_entry = ttk.Entry(self.top)
-        self.level_entry.grid(row=4, column=1, padx=5, pady=5)
+        self.level_var = tk.StringVar(self.top)
+        self.level_var.set("") 
+        self.level_option = ttk.OptionMenu(self.top, self.level_var,"", "1", "2", "3","4","5","6")
+        self.level_option.grid(row=4, column=1, padx=5, pady=5)
 
         self.gender_label = ttk.Label(self.top, text="Gender:")
         self.gender_label.grid(row=5, column=0, padx=5, pady=5)
@@ -272,7 +274,7 @@ class AddStudentDialog:
         first_name = self.first_name_entry.get().title()
         middle_name = self.middle_name_entry.get().title()
         last_name = self.last_name_entry.get().title()
-        lvl = self.level_entry.get()
+        lvl = self.level_var.get()
         gender = GENDER_VALUES[self.gender_var.get()]
         course_code = self.course_code_entry.get()
 
@@ -321,11 +323,13 @@ class UpdateStudentDialog:
         self.last_name_entry.grid(row=3, column=1, padx=5, pady=5)
         self.last_name_entry.insert(0, student_data[3])
 
-        self.level_label = ttk.Label(self.top, text="Level:")
+        self.level_label = ttk.Label(self.top, text="Year Level:")
         self.level_label.grid(row=4, column=0, padx=5, pady=5)
-        self.level_entry = ttk.Entry(self.top)
-        self.level_entry.grid(row=4, column=1, padx=5, pady=5)
-        self.level_entry.insert(0, student_data[4])
+        self.level_var = tk.StringVar(self.top)
+        self.level_var.set(student_data[4])
+        self.level_option = ttk.OptionMenu(self.top, self.level_var, student_data[4], "1", "2", "3","4","5","6")
+        self.level_option.grid(row=4, column=1, padx=5, pady=5)
+
 
         self.gender_label = ttk.Label(self.top, text="Gender:")
         self.gender_label.grid(row=5, column=0, padx=5, pady=5)
@@ -348,7 +352,7 @@ class UpdateStudentDialog:
         first_name = self.first_name_entry.get().title()
         middle_name = self.middle_name_entry.get().title()
         last_name = self.last_name_entry.get().title()
-        lvl = self.level_entry.get()
+        lvl = self.level_var.get()
         gender = GENDER_VALUES[self.gender_var.get()] 
         course_code = self.course_code_entry.get()
 
@@ -411,7 +415,6 @@ class UpdateCourseDialog:
         self.course_code_entry = ttk.Entry(self.top)
         self.course_code_entry.grid(row=0, column=1, padx=5, pady=5)
         self.course_code_entry.insert(0, course_data[0])
-        self.course_code_entry.config(state='readonly')
 
         self.course_name_label = ttk.Label(self.top, text="Course Name:")
         self.course_name_label.grid(row=1, column=0, padx=5, pady=5)
@@ -425,7 +428,7 @@ class UpdateCourseDialog:
         self.course_data = course_data
 
     def submit(self):
-        course_code = self.course_code_entry.get()
+        course_code = self.course_code_entry.get().upper()
         course_name = self.course_name_entry.get().title()
 
         course_manager = CourseManager(db_manager) 
