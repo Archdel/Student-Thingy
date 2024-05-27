@@ -202,12 +202,12 @@ class AddStudent(tk.Frame):
         
     def add_student(self):
         id_number = self.id_entry.get()
-        first_name = self.first_name_entry.get()
-        middle_name = self.middle_name_entry.get()
-        last_name = self.last_name_entry.get()
+        first_name = self.first_name_entry.get().upper().strip()
+        middle_name = self.middle_name_entry.get().upper().strip()
+        last_name = self.last_name_entry.get().upper().strip()
         lvl = self.lvl_entry.get()
         gender = self.gender_var.get()
-        course_code = self.course_entry.get()
+        course_code = self.course_entry.get().upper().strip()
         
         add_student(students, courses, id_number, first_name, middle_name, last_name, lvl, gender, course_code)
         self.controller.frames[ViewStudents].refresh_treeview()
@@ -260,11 +260,11 @@ class AddCourse(tk.Frame):
         back_button.place(x=180, y=260)
 
     def add_course(self):
-        course_code = self.code_entry.get()
+        course_code = self.code_entry.get().upper().strip()
         if any(course.course_code == course_code for course in courses):
             messagebox.showerror("Error", "Course with this Course Code already exists.")
             return
-        course_name = self.course_entry.get()
+        course_name = self.course_entry.get().upper().strip()
         courses.append(Course(course_code, course_name))
         save_courses_to_csv(courses)
         self.controller.frames[ViewStudents].refresh_treeview()
@@ -286,7 +286,7 @@ class DeleteCourse(tk.Frame):
         delete_button.place(x=110, y=80)
 
     def confirm_delete_course(self):
-        course_code = self.code_entry.get()
+        course_code = self.code_entry.get().upper().strip()
         confirmation = messagebox.askyesno("Confirmation", f"Are you sure you want to delete course with code {course_code}?")
         if confirmation:
             delete_course(students, courses, course_code)
@@ -398,7 +398,7 @@ class EditStudent(tk.Frame):
         cancel_button.place(x=400, y=260)
 
     def search_student(self):
-        student_id = self.id_entry.get()
+        student_id = self.id_entry.get().upper().strip()
         found_student = None
         for student in students:
             if student.id == student_id:
@@ -426,12 +426,12 @@ class EditStudent(tk.Frame):
     
     def save_student(self):
         student_id = self.id_entry.get()
-        first_name = self.first_name_entry.get()
-        middle_name = self.middle_name_entry.get()
-        last_name = self.last_name_entry.get()
+        first_name = self.first_name_entry.get().upper().strip()
+        middle_name = self.middle_name_entry.get().upper().strip()
+        last_name = self.last_name_entry.get().upper().strip()
         lvl = self.lvl_entry.get()
-        gender = self.gender_var.get()
-        course_code = self.course_entry.get()
+        gender = self.gender_var.get().upper().strip()
+        course_code = self.course_entry.get().upper().strip()
         for student in students:
             if self.course_exists(course_code):
                 if student.id == student_id:
@@ -465,6 +465,12 @@ class EditCourse(tk.Frame):
         search_button = tk.Button(self, text="Search", command=self.search_course)
         search_button.place(x=300, y=50)
 
+        self.ccode_var = tk.StringVar()
+        ccode_label = tk.Label(self, text="Course Name:")
+        ccode_label.place(x=400, y=80)
+        self.ccode_entry = tk.Entry(self, width=30, textvariable=self.ccode_var)
+        self.ccode_entry.place(x=440, y=80)
+        
         self.name_var = tk.StringVar()
         name_label = tk.Label(self, text="Course Name:")
         name_label.place(x=10, y=80)
@@ -478,7 +484,7 @@ class EditCourse(tk.Frame):
         cancel_button.place(x=230, y=110)
 
     def search_course(self):
-        course_code = self.code_entry.get()
+        course_code = self.code_entry.get().upper().strip()
         found_course = None
         for course in courses:
             if course.course_code == course_code:
@@ -486,14 +492,16 @@ class EditCourse(tk.Frame):
                 break
         if found_course:
             self.name_var.set(found_course.course_name)
+            self.ccode_var.set(found_course.course_code)
         else:
             messagebox.showinfo("Error", "Course not found.")
 
     def save_course(self):
-        course_code = self.code_entry.get()
-        course_name = self.name_entry.get()
+        course_code = self.code_entry.get().upper().strip()
+        course_name = self.name_entry.get().upper().strip()
         for course in courses:
             if course.course_code == course_code:
+                course.course_code = self.ccode_entry.get().upper().strip()
                 course.course_name = course_name
                 save_courses_to_csv(courses)
                 self.controller.frames[ViewCourses].refresh_treeview()
